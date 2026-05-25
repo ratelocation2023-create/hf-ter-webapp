@@ -1,0 +1,2555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UE&A — HomeFirst TER Generator v2.4 Smart Learning</title>
+<style>
+/* ── Portal-exact styling ── */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Roboto","Segoe UI",Arial,sans-serif;background:#f5f5f5;color:#212121;min-height:100vh}
+
+/* TOP BAR */
+.topbar{background:#1a237e;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:99;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.logo{background:#c62828;padding:3px 9px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:1px}
+.tb-title{font-size:14px;font-weight:500;flex:1}
+
+/* SIDE NAV — portal style */
+.layout{display:flex;min-height:calc(100vh - 46px)}
+.sidenav{width:220px;background:#fff;border-right:1px solid #e0e0e0;padding:12px 0;flex-shrink:0;position:sticky;top:46px;height:calc(100vh - 46px);overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;transition:background .2s;font-size:13px;color:#555;border-left:3px solid transparent}
+.nav-item:hover{background:#f5f7ff;color:#1a237e}
+.nav-item.active{background:#e8eaf6;color:#1a237e;border-left-color:#1a237e;font-weight:600}
+.nav-item.done{color:#2e7d32}
+.nav-num{width:24px;height:24px;border-radius:50%;background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.nav-item.active .nav-num{background:#1a237e;color:#fff}
+.nav-item.done .nav-num{background:#2e7d32;color:#fff}
+
+/* MAIN CONTENT */
+.main{flex:1;padding:20px 24px 100px;max-width:960px}
+.section-wrap{display:none}
+.section-wrap.active{display:block}
+.section-hdr{font-size:15px;font-weight:600;color:#212121;padding:14px 0 10px;border-bottom:1px solid #e0e0e0;margin-bottom:20px}
+
+/* MUI-STYLE FLOATING LABEL FIELDS */
+.mrow{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.mfld{position:relative;flex:1;min-width:200px}
+.mfld.full{flex:0 0 100%;min-width:0}
+.mfld.half{flex:0 0 calc(50% - 8px)}
+.mfld.third{flex:0 0 calc(33.3% - 11px)}
+.mfld input,.mfld textarea,.mfld select{
+  width:100%;border:1px solid #bdbdbd;border-radius:4px;
+  padding:16px 12px 6px;font-size:14px;font-family:inherit;
+  outline:none;background:#fff;transition:border .15s;
+  color:#212121}
+.mfld textarea{resize:vertical;min-height:80px;padding-top:20px}
+.mfld select{padding:16px 30px 6px 12px;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='18' height='18'%3E%3Cpath fill='%23757575' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;cursor:pointer}
+.mfld input:focus,.mfld textarea:focus,.mfld select:focus{
+  border-color:#1565c0;border-width:2px}
+.mfld input.req,.mfld textarea.req,.mfld select.req{border-color:#c62828}
+.mfld input.filled,.mfld textarea.filled,.mfld select.filled{
+  background:#f1f8e9;border-color:#558b2f}
+.mfld-label{position:absolute;left:12px;top:12px;font-size:14px;color:#757575;
+  pointer-events:none;transition:all .15s;background:transparent;padding:0 2px}
+.mfld input:focus~.mfld-label,
+.mfld input:not(:placeholder-shown)~.mfld-label,
+.mfld textarea:focus~.mfld-label,
+.mfld textarea:not(:placeholder-shown)~.mfld-label,
+.mfld select:focus~.mfld-label,
+.mfld select.has-val~.mfld-label{
+  top:4px;font-size:11px;color:#1565c0}
+.mfld input.req~.mfld-label,
+.mfld select.req~.mfld-label{color:#c62828}
+.mfld-err{font-size:11px;color:#c62828;margin-top:3px;display:none}
+.mfld input.req~.mfld-err,
+.mfld select.req~.mfld-err{display:block}
+.mfld-static{background:#f9fbe7;border-radius:4px;padding:8px 12px;font-size:13px;color:#555;border:1px solid #e0e0e0}
+.mfld-static-label{font-size:11px;color:#757575;margin-bottom:3px}
+
+/* SUB-SECTION TITLE */
+.sub-title{font-size:13px;font-weight:600;color:#1a237e;margin:16px 0 12px;
+  display:flex;align-items:center;gap:8px}
+.sub-title::after{content:'';flex:1;height:1px;background:#e8eaf6}
+
+/* BOUNDARY TABLE */
+.bnd-table{width:100%;border-collapse:collapse;margin-bottom:16px}
+.bnd-table th{background:#f5f5f5;padding:10px 12px;text-align:left;font-size:12px;
+  font-weight:600;color:#555;border:1px solid #e0e0e0}
+.bnd-table td{padding:8px;border:1px solid #e0e0e0;vertical-align:middle}
+.bnd-table td.dir{font-size:13px;font-weight:600;color:#333;background:#fafafa;width:80px}
+.bnd-table td input{width:100%;border:1px solid #e0e0e0;border-radius:4px;padding:8px 10px;
+  font-size:13px;font-family:inherit;outline:none;background:#fff}
+.bnd-table td input:focus{border-color:#1565c0;border-width:2px}
+.bnd-table td input.filled{background:#f1f8e9;border-color:#558b2f}
+
+/* VALUATION TABLE */
+.val-table{width:100%;border-collapse:collapse;margin-bottom:20px}
+.val-table th{background:#f5f5f5;padding:10px;text-align:left;font-size:12px;
+  font-weight:600;color:#555;border:1px solid #e0e0e0}
+.val-table td{padding:8px;border:1px solid #e0e0e0;vertical-align:middle}
+.val-table td.cat-hdr{font-weight:700;font-size:13px;background:#fafafa;text-align:center;vertical-align:middle}
+.val-table td.row-lbl{font-size:12.5px;color:#555;background:#fafafa}
+.val-table td input{width:100%;border:1px solid #e0e0e0;border-radius:4px;padding:7px 9px;
+  font-size:13px;font-family:inherit;outline:none;text-align:right}
+.val-table td input:focus{border-color:#1565c0}
+.val-table td input.filled{background:#f1f8e9;border-color:#558b2f}
+.val-table td.auto{background:#fafafa;text-align:right;font-size:13px;color:#1a237e;font-weight:600;padding-right:12px}
+
+/* FLOOR TABLE */
+.floor-table{width:100%;border-collapse:collapse;margin-bottom:10px}
+.floor-table th{background:#f5f5f5;padding:10px;font-size:12px;font-weight:600;color:#555;border:1px solid #e0e0e0;text-align:left}
+.floor-table td{padding:8px;border:1px solid #e0e0e0}
+.floor-table td input{width:100%;border:1px solid #e0e0e0;border-radius:4px;padding:7px 9px;font-size:13px;font-family:inherit;outline:none}
+.add-floor-btn{background:none;border:none;color:#1565c0;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:4px;padding:4px 0;font-family:inherit}
+.add-floor-btn:hover{text-decoration:underline}
+
+/* SAVE & PROCEED */
+.sap-btn{display:flex;align-items:center;gap:6px;background:#fff;border:2px solid #1565c0;
+  color:#1565c0;padding:10px 22px;border-radius:24px;font-size:14px;font-weight:500;
+  cursor:pointer;font-family:inherit;transition:all .2s;margin-top:20px}
+.sap-btn:hover{background:#e3f2fd}
+.sap-btn svg{width:18px;height:18px}
+
+/* GENERATE SECTION */
+#scr-generate{text-align:center;padding:60px 20px}
+.gen-spinner{width:56px;height:56px;border:5px solid #e8eaf6;border-top-color:#1a237e;
+  border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gen-steps{text-align:left;max-width:340px;margin:16px auto 0}
+.gen-step{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;
+  font-size:13px;opacity:.3;transition:all .4s;margin-bottom:5px}
+.gen-step.act{opacity:1;color:#1a237e;background:#e8eaf6}
+.gen-step.done{opacity:1;color:#2e7d32;background:#e8f5e9}
+
+/* UPLOAD SCREEN */
+#scr-upload .upload-card{background:#fff;border-radius:8px;padding:18px;margin-bottom:12px;
+  border:1px solid #e0e0e0;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.uzone{border:2px dashed #90caf9;border-radius:8px;padding:20px;text-align:center;
+  cursor:pointer;background:#f3f8ff;transition:all .2s;margin-bottom:8px}
+.uzone:hover,.uzone.drag{border-color:#1565c0;background:#e3f2fd}
+.uzone p{font-size:13px;color:#555}
+.uzone small{font-size:11px;color:#aaa}
+.prev-grid{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.prev-grid img{width:72px;height:72px;object-fit:cover;border-radius:4px;border:1px solid #e0e0e0}
+.pdf-chip{background:#fce4ec;border:1px solid #e91e63;border-radius:6px;padding:6px 10px;
+  font-size:12px;color:#c2185b;display:flex;align-items:center;gap:5px}
+
+/* CASE LIST */
+.case-card{background:#fff;border-radius:8px;padding:14px 18px;display:flex;align-items:center;
+  gap:14px;margin-bottom:10px;cursor:pointer;border-left:3px solid #1a237e;
+  box-shadow:0 1px 3px rgba(0,0,0,.08);transition:box-shadow .2s}
+.case-card:hover{box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.case-card.done{border-left-color:#2e7d32}
+.ci-info{flex:1}.ci-name{font-size:14px;font-weight:600}
+.ci-meta{font-size:11.5px;color:#888;margin-top:2px}
+.ci-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px}
+.cb-done{background:#e8f5e9;color:#2e7d32}.cb-prog{background:#fff3e0;color:#e65100}
+
+/* BOTTOM BAR */
+.bot-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e0e0e0;
+  padding:10px 20px;display:flex;align-items:center;justify-content:space-between;
+  z-index:98;box-shadow:0 -2px 8px rgba(0,0,0,.07)}
+.bb-btn{padding:9px 20px;border-radius:6px;border:none;font-size:13px;font-weight:600;
+  cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all .15s}
+.bb-primary{background:#1a237e;color:#fff}.bb-primary:hover{background:#283593}
+.bb-success{background:#2e7d32;color:#fff}.bb-success:hover{background:#1b5e20}
+.bb-red{background:#c62828;color:#fff}.bb-red:hover{background:#b71c1c}
+.bb-back{background:none;border:none;color:#555;font-size:13px;cursor:pointer;
+  padding:8px;display:flex;align-items:center;gap:5px;font-family:inherit}
+
+/* TOAST */
+.toast{position:fixed;bottom:70px;right:16px;padding:10px 18px;border-radius:8px;
+  font-size:13px;font-weight:500;z-index:200;transform:translateY(20px);opacity:0;
+  transition:all .3s;pointer-events:none;color:#fff;background:#333}
+.toast.on{transform:translateY(0);opacity:1}
+.toast.ok{background:#2e7d32}.toast.err{background:#c62828}
+
+/* OPTIONS SCREEN */
+.opt-card{background:#fff;border-radius:8px;padding:20px;margin-bottom:14px;border:1px solid #e0e0e0}
+.opt-card h3{font-size:14px;font-weight:600;color:#1a237e;margin-bottom:12px}
+.opt-card p{font-size:12.5px;color:#666;margin-bottom:12px}
+.tog-row{display:flex;gap:10px}
+.tog-btn{flex:1;padding:12px;border:1.5px solid #e0e0e0;border-radius:6px;
+  background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#888;
+  text-align:center;transition:all .2s;font-family:inherit}
+.tog-btn.y{border-color:#2e7d32;background:#e8f5e9;color:#2e7d32}
+.tog-btn.n{border-color:#c62828;background:#ffebee;color:#c62828}
+.bua-opts{background:#f5f7ff;border-radius:6px;padding:12px;margin-top:10px;display:none}
+.bua-opts.on{display:block}
+.bua-opt{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1.5px solid #e0e0e0;
+  border-radius:6px;margin-bottom:8px;cursor:pointer;background:#fff;transition:all .15s}
+.bua-opt:hover{border-color:#1a237e}.bua-opt.sel{border-color:#1a237e;background:#e8eaf6}
+.bua-opt label{font-size:13px;font-weight:500;cursor:pointer;flex:1}
+
+
+.type-guide-box{background:#f5f7ff;border-left:4px solid #1a237e;border-radius:6px;padding:10px 12px;margin-top:4px;font-size:12.5px;color:#444;line-height:1.45}
+.type-guide-box strong{color:#1a237e}
+
+/* DASHBOARD */
+.dash-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.new-btn{background:#1a237e;color:#fff;border:none;padding:9px 20px;border-radius:6px;
+  font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
+
+
+/* LEARNING MODE */
+.learn-top-btn{background:#fff;color:#1a237e;border:none;border-radius:16px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer}
+.learn-card{background:#fff;border-radius:8px;padding:18px;margin-bottom:14px;border:1px solid #e0e0e0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.learn-card h3{font-size:15px;color:#1a237e;margin-bottom:10px}
+.learn-grid{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:14px;margin-bottom:14px}
+.learn-input{display:flex;flex-direction:column;gap:5px}
+.learn-input label{font-size:12px;color:#555;font-weight:600}
+.learn-input input,.learn-input select,.learn-input textarea{border:1px solid #bdbdbd;border-radius:6px;padding:9px 10px;font-size:13px;font-family:inherit;background:#fff}
+.learn-input textarea{min-height:72px;resize:vertical}
+.learn-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.learn-rule{border:1px solid #e0e0e0;border-radius:8px;padding:10px;margin:8px 0;background:#fafafa;font-size:12.5px}
+.learn-rule b{color:#1a237e}
+.audit-box{background:#f5f7ff;border:1px solid #d6dcff;border-radius:8px;padding:12px;font-size:12.5px;color:#444;white-space:pre-wrap;max-height:280px;overflow:auto}
+@media(max-width:760px){.learn-grid{grid-template-columns:1fr}}
+/* ENHANCED CORRECTION MEMORY CARDS */
+.correction-card{background:#fff;border-radius:8px;padding:14px 16px;margin-bottom:10px;border-left:4px solid #c62828;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.correction-card.seed{border-left-color:#1a237e}.correction-card.auto{border-left-color:#f57c00}
+.cc-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.cc-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;text-transform:uppercase}
+.cc-badge.user{background:#ffebee;color:#c62828}.cc-badge.seed{background:#e8eaf6;color:#1a237e}.cc-badge.auto{background:#fff3e0;color:#e65100}
+.cc-type{font-size:11px;color:#888;background:#f5f5f5;padding:2px 7px;border-radius:10px}
+.cc-body{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12.5px}
+.cc-row{display:flex;flex-direction:column;gap:2px}.cc-lbl{font-size:10.5px;color:#999;text-transform:uppercase;letter-spacing:.5px}
+.cc-val{color:#212121;font-weight:500}.cc-wrong{color:#c62828}.cc-correct{color:#2e7d32}
+.cc-reason{grid-column:1/-1;background:#f5f5f5;border-radius:4px;padding:6px 10px;font-size:12px;color:#555}
+.cc-proof{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#1565c0;margin-top:6px;cursor:pointer;background:#e3f2fd;padding:3px 8px;border-radius:10px;border:none;font-family:inherit}
+.cc-del{background:none;border:none;color:#bbb;font-size:14px;cursor:pointer;margin-left:auto;padding:2px 6px;border-radius:4px}.cc-del:hover{color:#c62828;background:#ffebee}
+/* AUDIT TABLE */
+.audit-table{width:100%;border-collapse:collapse;font-size:12px}
+.audit-table th{background:#1a237e;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:600}
+.audit-table td{padding:7px 10px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+.audit-table tr:nth-child(even) td{background:#f8f8fc}.audit-table tr:hover td{background:#e8eaf6}
+.conf-bar{height:6px;border-radius:3px;background:#e0e0e0;margin-top:3px;overflow:hidden}
+.conf-fill{height:100%;border-radius:3px}
+.src-chip{display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:600;margin-right:3px}
+.src-doc{background:#e8f5e9;color:#2e7d32}.src-form{background:#e3f2fd;color:#1565c0}
+.src-photo{background:#fff3e0;color:#e65100}.src-gps{background:#f3e5f5;color:#7b1fa2}
+.src-infer{background:#fce4ec;color:#c2185b}
+.warn-chip{background:#fff3e0;border:1px solid #ffe0b2;border-radius:4px;padding:3px 8px;font-size:11px;color:#e65100;margin-top:4px;display:flex;align-items:flex-start;gap:4px}
+/* BUG REPORT TABS */
+.bug-tabs{display:flex;gap:2px;margin-bottom:16px;background:#f5f5f5;border-radius:8px;padding:4px}
+.bug-tab{flex:1;padding:8px;border:none;background:none;font-size:13px;font-weight:600;cursor:pointer;border-radius:6px;color:#666;font-family:inherit;transition:all .15s}
+.bug-tab.active{background:#fff;color:#1a237e;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.bug-panel{display:none}.bug-panel.active{display:block}
+.photo-preview-wrap{position:relative;display:inline-block;margin-top:8px}
+.photo-preview-wrap img{max-width:100%;max-height:200px;border-radius:6px;border:1px solid #e0e0e0}
+.photo-remove-btn{position:absolute;top:4px;right:4px;background:#c62828;color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.learn-section-tabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.lst-btn{padding:7px 14px;border:1.5px solid #e0e0e0;border-radius:20px;background:#fff;font-size:12.5px;font-weight:600;cursor:pointer;color:#666;font-family:inherit}
+.lst-btn.active{border-color:#1a237e;background:#e8eaf6;color:#1a237e}
+.lst-btn.has-items{border-color:#c62828;color:#c62828}.lst-btn.has-items.active{background:#ffebee}
+.ss-drop{border:2px dashed #90caf9;border-radius:6px;padding:16px;text-align:center;cursor:pointer;background:#f3f8ff;transition:all .2s}
+.ss-drop:hover{border-color:#1565c0;background:#e3f2fd}
+.ss-drop p{font-size:13px;color:#555}.ss-drop small{font-size:11px;color:#aaa}
+.auto-learn-banner{background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;font-size:13px;color:#1b5e20}
+
+
+@media print{
+  .topbar,.sidenav,.bot-bar,.toast,.add-floor-btn{display:none!important}
+  body{background:#fff}.main{padding:0;max-width:100%}
+  .section-wrap.active{display:block!important}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <span class="logo">UE&A</span>
+  <span class="tb-title" id="tbTitle">HomeFirst TER Generator v2.4 Smart Learning</span>
+</div>
+
+<div class="layout">
+<div class="sidenav" id="sidenav">
+  <!-- built by JS -->
+</div>
+<div class="main">
+
+<!-- DASHBOARD -->
+<div id="scr-dash">
+  <div class="dash-hdr">
+    <h2 style="font-size:18px;font-weight:600;color:#1a237e">All Cases</h2>
+    <button class="new-btn" id="btnNewCase" onclick="startCase()">+ New Case</button>
+  </div>
+  
+  <div class="opt-card" style="margin-bottom:18px">
+    <h3>Extension Update Guide</h3>
+    <p>Cleaned text from the 14 Word reference files and added comfort updates: screenshot reader support, site-photo handling, auto-save notes, validation, and export-ready JSON.</p>
+  </div>
+<div id="caseList">
+    <div style="text-align:center;padding:50px;color:#aaa">
+      <div style="font-size:40px;margin-bottom:12px">&#127968;</div>
+      <p style="font-size:14px">No cases yet. Click <strong>New Case</strong> to start!</p>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 1: CASE INFO -->
+<div id="scr-info" style="display:none">
+  <p class="section-hdr">New Case</p>
+  <div style="background:#fff;border-radius:8px;padding:20px;border:1px solid #e0e0e0">
+    <div class="mrow">
+      <div class="mfld full">
+        <input type="text" id="cName" placeholder=" " oninput="document.getElementById('tbTitle').textContent=this.value||'New Case'">
+        <label class="mfld-label">Applicant / Case Name *</label>
+      </div>
+    </div>
+    <div class="mrow">
+      <div class="mfld half">
+        <input type="date" id="cDate" placeholder=" ">
+        <label class="mfld-label">Date of Visit *</label>
+      </div>
+      <div class="mfld half">
+        <select id="cType" onchange="this.classList.toggle('has-val',!!this.value); updateTypeGuide()">
+          <option value=""></option>
+          <option value="open_plot">Open Plot / Vacant Land</option>
+          <option value="rcc_house">RCC House / Individual House</option>
+          <option value="apartment">Apartment / Flat</option>
+          <option value="under_construction">Under Construction</option>
+          <option value="topup">Top-Up Loan</option>
+          <option value="shop_office">Shop / Office</option>
+        </select>
+        <label class="mfld-label">Property Type *</label>
+      </div>
+    </div>
+    <div class="type-guide-box" id="typeGuideBox">
+      Select property type first. AI will use only that selected property-type logic while creating TER report.
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2: UPLOAD -->
+<div id="scr-upload" style="display:none">
+  <p class="section-hdr">Upload Documents</p>
+  <div class="upload-card">
+    <p style="font-size:13px;font-weight:600;margin-bottom:8px">&#128247; GPS / Site Photos <span style="font-size:11px;color:#888;font-weight:400">— Site photos and GPS Lat/Long will be extracted</span></p>
+    <div class="uzone" id="uz-gps" onclick="document.getElementById('f-gps').click()" ondragover="dov(event,this)" ondrop="dop(event,'gps')" ondragleave="this.classList.remove('drag')">
+      <p>Drop site/GPS photos here or click to select</p><small>JPG, PNG — Multiple allowed</small>
+    </div>
+    <input type="file" id="f-gps" multiple accept="image/*" style="display:none" onchange="addF(this,'gps')">
+    <div class="prev-grid" id="p-gps"></div>
+  </div>
+  <div class="upload-card">
+    <p style="font-size:13px;font-weight:600;margin-bottom:8px">&#128196; ATS / Sale Deed / Property Documents <span style="font-size:11px;color:#888;font-weight:400">— Address & boundaries</span></p>
+    <div class="uzone" id="uz-ats" onclick="document.getElementById('f-ats').click()" ondragover="dov(event,this)" ondrop="dop(event,'ats')" ondragleave="this.classList.remove('drag')">
+      <p>Drop documents here or click to select</p><small>JPG, PNG, PDF</small>
+    </div>
+    <input type="file" id="f-ats" multiple accept="image/*,.pdf" style="display:none" onchange="addF(this,'ats')">
+    <div class="prev-grid" id="p-ats"></div>
+  </div>
+  <div class="upload-card">
+    <p style="font-size:13px;font-weight:600;margin-bottom:8px">&#128231; Email / MIS Screenshot <span style="font-size:11px;color:#888;font-weight:400">— LAI No, Property Code, Customer</span></p>
+    <div class="uzone" id="uz-email" onclick="document.getElementById('f-email').click()" ondragover="dov(event,this)" ondrop="dop(event,'email')" ondragleave="this.classList.remove('drag')">
+      <p>Drop email/MIS screenshot here</p><small>JPG, PNG, PDF</small>
+    </div>
+    <input type="file" id="f-email" multiple accept="image/*,.pdf" style="display:none" onchange="addF(this,'email')">
+    <div class="prev-grid" id="p-email"></div>
+  </div>
+  <div class="upload-card">
+    <p style="font-size:13px;font-weight:600;margin-bottom:8px">&#128221; Field Visit Form <span style="font-size:11px;color:#888;font-weight:400">— Distances, person met</span></p>
+    <div class="uzone" id="uz-form" onclick="document.getElementById('f-form').click()" ondragover="dov(event,this)" ondrop="dop(event,'form')" ondragleave="this.classList.remove('drag')">
+      <p>Drop field form photo here</p><small>JPG, PNG, PDF</small>
+    </div>
+    <input type="file" id="f-form" multiple accept="image/*,.pdf" style="display:none" onchange="addF(this,'form')">
+    <div class="prev-grid" id="p-form"></div>
+  </div>
+</div>
+
+<!-- STEP 3: OPTIONS -->
+<div id="scr-opts" style="display:none">
+  <p class="section-hdr">Format Options</p>
+  <div class="opt-card">
+    <h3>&#128247; Architect Map Received?</h3>
+    <p>Has customer provided a building plan / architect map?</p>
+    <div class="tog-row">
+      <button class="tog-btn" id="tmy" onclick="setMap('yes')">&#10003; Yes, Map Received</button>
+      <button class="tog-btn" id="tmn" onclick="setMap('no')">&#10007; No Map</button>
+    </div>
+    <div class="bua-opts" id="buaBox">
+      <p style="font-size:13px;font-weight:600;color:#1a237e;margin-bottom:8px">Select BUA from map:</p>
+      <div class="bua-opt" id="bo0" onclick="setBua('gf')"><input type="radio" name="bua"><label>GF Only — Plot × 1</label></div>
+      <div class="bua-opt" id="bo1" onclick="setBua('g1')"><input type="radio" name="bua"><label>G+1 — Plot × 2</label></div>
+      <div class="bua-opt" id="bo2" onclick="setBua('partial')"><input type="radio" name="bua"><label>Partial / Custom BUA</label></div>
+      <div id="cbInp" style="display:none;margin-top:8px">
+        <label style="font-size:12px;font-weight:600">Custom BUA (sq.ft):</label>
+        <input type="number" id="cbVal" placeholder="e.g. 450" style="margin-top:4px;width:100%;border:1px solid #e0e0e0;padding:8px;border-radius:4px;font-size:13px">
+      </div>
+    </div>
+  </div>
+  <div class="opt-card">
+    <h3>&#128208; Colony Layout Plan?</h3>
+    <p>Is colony layout plan available? (For property identification)</p>
+    <div class="tog-row">
+      <button class="tog-btn" id="tly" onclick="setLayout('yes')">&#10003; Yes, Layout Received</button>
+      <button class="tog-btn" id="tln" onclick="setLayout('no')">&#10007; Not Available</button>
+    </div>
+  </div>
+  <div class="opt-card">
+    <h3>+ Additional (Optional)</h3>
+    <div class="mrow" style="margin-bottom:0">
+      <div class="mfld half"><input type="number" id="lr" placeholder=" "><label class="mfld-label">Land Rate (Rs/sqft)</label></div>
+      <div class="mfld half"><input type="number" id="ps" placeholder=" "><label class="mfld-label">Plot Size (sqft)</label></div>
+    </div>
+    <div class="mrow" style="margin-top:16px;margin-bottom:0">
+      <div class="mfld full"><textarea id="en" placeholder=" " rows="3"></textarea><label class="mfld-label">Extra Notes</label></div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 4: GENERATING -->
+<div id="scr-gen" style="display:none;text-align:center;padding:60px 20px">
+  <div class="gen-spinner"></div>
+  <h2 style="font-size:17px;color:#1a237e;margin-bottom:6px">Generating TER Report...</h2>
+  <p style="color:#888;font-size:13px">AI is analyzing uploaded documents and screenshots</p>
+  <div class="gen-steps">
+    <div class="gen-step" id="gs0">&#128196; Reading documents...</div>
+    <div class="gen-step" id="gs1">&#128269; Extracting data...</div>
+    <div class="gen-step" id="gs2">&#128203; Applying rules...</div>
+    <div class="gen-step" id="gs3">&#9997;&#65039; Filling sections...</div>
+    <div class="gen-step" id="gs4">&#10003; Report ready...</div>
+  </div>
+</div>
+
+
+<!-- LEARNING / TEACH AI SCREEN v2.4 -->
+<div id="scr-learn" style="display:none">
+  <p class="section-hdr">🧠 AI Teach & Report System v2.4</p>
+  <div class="bug-tabs">
+    <button class="bug-tab active" id="ltab_report" onclick="switchLearnTab('report')">📝 Galti Report</button>
+    <button class="bug-tab" id="ltab_memory" onclick="switchLearnTab('memory')">🗂️ Saved Rules</button>
+    <button class="bug-tab" id="ltab_audit" onclick="switchLearnTab('audit')">🔍 AI Audit</button>
+    <button class="bug-tab" id="ltab_photos" onclick="switchLearnTab('photos')">📷 Photos</button>
+  </div>
+
+  <!-- PANEL 1: REPORT BUG -->
+  <div class="bug-panel active" id="lpanel_report">
+    <div id="autoLearnBanner" class="auto-learn-banner" style="display:none">
+      ✅ <b>Auto-learning active!</b>&nbsp; Pichle corrections is report me apply hue.
+    </div>
+    <div class="learn-card">
+      <h3>⚠️ Galti Report — AI Sikhega, Next Time Repeat Nahi Hoga</h3>
+      <p style="font-size:13px;color:#666;margin-bottom:16px">Jab AI koi galat value de — wrong areaLimits, wrong boundary source, galat road type — use yahan report karo with screenshot. Ye rule memory me save hoga aur <b>next report me automatically apply hoga</b>.</p>
+      <div class="learn-grid">
+        <div class="learn-input"><label>Property Type</label><select id="lm_propertyType"><option value="all">All Property Types</option><option value="open_plot">Open Plot / Vacant Land</option><option value="rcc_house">RCC House / Individual House</option><option value="apartment">Apartment / Flat</option><option value="under_construction">Under Construction</option><option value="topup">Top-Up Loan</option><option value="shop_office">Shop / Office</option></select></div>
+        <div class="learn-input"><label>Section</label><select id="lm_section"><option>General Details</option><option>Property Overview</option><option>Visit Details</option><option>Locality</option><option>Property Plan</option><option>NDMA Guidelines</option><option>Boundaries &amp; Dimensions</option><option>Structural Details</option><option>Violation</option><option>Valuation</option><option>Floor Wise Built-up Area</option><option>Observations</option><option>Site Photo Analysis</option></select></div>
+        <div class="learn-input"><label>Field / Issue Name</label><input id="lm_field" placeholder="Jaise: s2.areaLimits / s7.northDoc / s4.roadType"></div>
+        <div class="learn-input"><label>❌ AI Ne Kya Galat Kiya</label><input id="lm_wrong" placeholder="Jaise: GP (jab MC hona chahiye tha)"></div>
+        <div class="learn-input"><label>✅ Sahi Value / Correct Rule</label><input id="lm_correct" placeholder="Jaise: MC kyunki Ward No. document me tha"></div>
+        <div class="learn-input"><label>Confidence</label><select id="lm_conf"><option value="high">High — Pakka Galat</option><option value="medium">Medium — Probable</option><option value="low">Low — Uncertain</option></select></div>
+        <div class="learn-input" style="grid-column:1/-1"><label>📋 Kyu Galat + Next Time Kya Karna Chahiye</label><textarea id="lm_reason" rows="3" placeholder="1) Kya galat hua  2) Document me kya tha  3) AI next time kya kare..."></textarea></div>
+        <div class="learn-input" style="grid-column:1/-1">
+          <label>📸 Wrong Screenshot Proof (optional — drag/paste/click)</label>
+          <div class="ss-drop" id="ssDropZone" ondragover="event.preventDefault()" ondrop="handleSSdrop(event)" onclick="document.getElementById('lm_screenshot').click()">
+            <p>Screenshot yahan drop karo / click karo / Ctrl+V se paste karo</p>
+            <small>JPG, PNG supported</small>
+          </div>
+          <input type="file" id="lm_screenshot" accept="image/*" style="display:none" onchange="handleSSfile(this)">
+          <div id="ssPreviewWrap" style="display:none" class="photo-preview-wrap">
+            <img id="ssPreviewImg" src="" alt="proof">
+            <button class="photo-remove-btn" onclick="removeSSPreview()">×</button>
+          </div>
+        </div>
+      </div>
+      <div class="learn-actions">
+        <button class="bb-btn bb-success" onclick="saveLearningRule()">💾 Save — Next Report Apply Hoga</button>
+        <button class="bb-btn" style="background:#e65100;color:#fff" onclick="exportLearningMemory()">📤 Export Memory</button>
+        <label class="bb-btn" style="background:#555;color:#fff;cursor:pointer">📥 Import Memory<input type="file" accept="application/json" style="display:none" onchange="importLearningMemory(this)"></label>
+        <button class="bb-btn bb-red" onclick="clearLearningMemoryConfirm()">🗑️ Clear User Rules</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 2: MEMORY LIST -->
+  <div class="bug-panel" id="lpanel_memory">
+    <div class="learn-card">
+      <h3>🗂️ Saved Correction Memory</h3>
+      <div class="learn-section-tabs" id="memFilterTabs">
+        <button class="lst-btn active" onclick="filterMemory('all',this)">All</button>
+        <button class="lst-btn" onclick="filterMemory('open_plot',this)">Open Plot</button>
+        <button class="lst-btn" onclick="filterMemory('rcc_house',this)">RCC House</button>
+        <button class="lst-btn" onclick="filterMemory('apartment',this)">Apartment</button>
+        <button class="lst-btn" onclick="filterMemory('under_construction',this)">Under Const.</button>
+        <button class="lst-btn" onclick="filterMemory('topup',this)">Top-Up</button>
+        <button class="lst-btn" onclick="filterMemory('shop_office',this)">Shop/Office</button>
+      </div>
+      <div id="learningList">No rules saved yet.</div>
+      <div style="margin-top:10px;font-size:12px;color:#888" id="memStats"></div>
+    </div>
+  </div>
+
+  <!-- PANEL 3: AUDIT NOTES -->
+  <div class="bug-panel" id="lpanel_audit">
+    <div class="learn-card">
+      <h3>🔍 AI Audit Trail — Last Report</h3>
+      <p style="font-size:12.5px;color:#666;margin-bottom:12px">Har field ka source, confidence aur warning. Low confidence ya warning wale fields dhyan se verify karo.</p>
+      <div id="auditList"><p style="color:#888;font-size:13px">Pehle report generate karo.</p></div>
+    </div>
+  </div>
+
+  <!-- PANEL 4: PHOTO ANALYSIS -->
+  <div class="bug-panel" id="lpanel_photos">
+    <div class="learn-card">
+      <h3>📷 Site Photo Deep Analysis</h3>
+      <p style="font-size:12.5px;color:#666;margin-bottom:12px">AI ne har photo me kya dekha — intent, observations aur kaunse fields support hue.</p>
+      <div id="photoAnalysisList"><p style="color:#888;font-size:13px">Pehle report generate karo.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- PORTAL REPLICA REPORT (Sections 1-13) -->
+<div id="scr-report" style="display:none">
+  <!-- SECTION 1 -->
+  <div class="section-wrap" id="sw-1">
+    <p class="section-hdr">1 &nbsp; General Details</p>
+    <div style="background:#fff;border-radius:8px;padding:18px;border:1px solid #e0e0e0;margin-bottom:12px">
+      <div class="mrow">
+        <div class="mfld full"><div class="mfld-static-label">Vendor Name</div><div class="mfld-static" id="r_vendorName">Unique Engineering and Associate - Bhopal</div></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><input type="date" id="r_dateVisit" placeholder=" "><label class="mfld-label">Date of Visit</label></div>
+        <div class="mfld half"><input type="text" id="r_lai" placeholder=" " readonly style="background:#f5f5f5"><label class="mfld-label">CL Contract No</label></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld full"><input type="text" id="r_pinCode" placeholder=" "><label class="mfld-label">Project Pin Code</label><div class="mfld-err">Project Pin Code is required</div></div>
+      </div>
+      <p class="sub-title" style="font-size:13px;font-weight:600;color:#333;margin-top:8px">Geo Coordinates</p>
+      <div class="mrow">
+        <div class="mfld half"><input type="text" id="r_lat" placeholder=" "><label class="mfld-label">Latitude</label><div class="mfld-err">Latitude is required</div></div>
+        <div class="mfld half"><input type="text" id="r_lng" placeholder=" "><label class="mfld-label">Longitude</label><div class="mfld-err">Longitude is required</div></div>
+      </div>
+      <button class="sap-btn" onclick="nextSection(1)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Save &amp; Proceed</button>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section-wrap" id="sw-2">
+    <p class="section-hdr">2 &nbsp; Property Overview</p>
+    <div style="background:#fff;border-radius:8px;padding:18px;border:1px solid #e0e0e0;margin-bottom:12px">
+      <div class="mrow">
+        <div class="mfld half"><select id="r_propCategory" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Project</option><option>Individual</option></select><label class="mfld-label">Property Category</label><div class="mfld-err">Property Category is required</div></div>
+        <div class="mfld half"><select id="r_propType" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Apartment</option><option>Row House</option><option>Individual House</option><option>Shop</option><option>Office</option></select><label class="mfld-label">Property Type</label><div class="mfld-err">Property Type is required</div></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><div class="mfld-static-label">Type of Loan</div><div class="mfld-static" id="r_loanType" style="padding:12px">—</div></div>
+        <div class="mfld half"><select id="r_propLocation" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Metro</option><option>Town</option><option>Village</option></select><label class="mfld-label">Property Location</label><div class="mfld-err">Property Location is required</div></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><input type="text" id="r_population" placeholder=" "><label class="mfld-label">Population as per Census 2011</label><div class="mfld-err">Population is required</div></div>
+        <div class="mfld half"><select id="r_ruralUrban" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Rural</option><option>Urban</option></select><label class="mfld-label">Rural / Urban (&gt;10K = Urban)</label><div class="mfld-err">Please select Rural or Urban</div></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><select id="r_zone" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Residential</option><option>Agriculture</option><option>Industrial</option><option>Mixed</option><option>Commercial</option></select><label class="mfld-label">Zone</label><div class="mfld-err">Zone is required</div></div>
+        <div class="mfld half"><select id="r_areaLimits" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>MC</option><option>TP</option><option>ZP</option><option>GP</option></select><label class="mfld-label">Property Area Limits</label><div class="mfld-err">Property Area Limit is required</div></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><input type="text" id="r_rera" placeholder=" "><label class="mfld-label">RERA Approval No</label><div class="mfld-err">RERA Approval Number is required</div></div>
+        <div class="mfld half"><div class="mfld-static-label">Project Name</div><div class="mfld-static" id="r_projectName" style="padding:12px">—</div></div>
+      </div>
+      <button class="sap-btn" onclick="nextSection(2)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Save &amp; Proceed</button>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section-wrap" id="sw-3">
+    <p class="section-hdr">3 &nbsp; Visit Details</p>
+    <div style="background:#fff;border-radius:8px;padding:18px;border:1px solid #e0e0e0;margin-bottom:12px">
+      <div class="mrow">
+        <div class="mfld third"><input type="text" id="r_personMet" placeholder=" "><label class="mfld-label">Person Met</label><div class="mfld-err">Person Met is required</div></div>
+        <div class="mfld third"><input type="text" id="r_relationship" placeholder=" "><label class="mfld-label">Relationship of person met and property</label><div class="mfld-err">Relationship is required</div></div>
+        <div class="mfld third"><input type="text" id="r_ownerName" placeholder=" "><label class="mfld-label">Current Owner of the Property</label><div class="mfld-err">Current Owner Name is required</div></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld third"><input type="text" id="r_ownerSource" placeholder=" "><label class="mfld-label">How did you find out property owner's name</label><div class="mfld-err">Owner Name Source is required</div></div>
+        <div class="mfld third"><select id="r_docsAvail" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Yes</option><option>No</option></select><label class="mfld-label">Property Documents Available?</label><div class="mfld-err">Please select if documents are available</div></div>
+        <div class="mfld third"><input type="text" id="r_societyBoard" placeholder=" "><label class="mfld-label">Name on Society Board / Signage</label><div class="mfld-err">Society Board Name is required</div></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><textarea id="r_legalAddress" placeholder=" " rows="3"></textarea><label class="mfld-label">Address as per legal document (Sale Deed)</label><div class="mfld-err">Legal Address is required</div></div>
+        <div class="mfld half"><textarea id="r_siteAddress" placeholder=" " rows="3"></textarea><label class="mfld-label">Address of Property (As per site)</label><div class="mfld-err">Site Address is required</div></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><input type="text" id="r_doorName" placeholder=" "><label class="mfld-label">Name on door of the premises</label></div>
+        <div class="mfld half"><input type="text" id="r_landmark" placeholder=" "><label class="mfld-label">Nearby landmark (within 500m)</label></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld third"><select id="r_occupancy" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Occupied</option><option>Vacant</option><option>Under Construction</option></select><label class="mfld-label">Occupancy Status</label><div class="mfld-err">Occupancy Status is required</div></div>
+        <div class="mfld third"><select id="r_occupiedBy" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Self</option><option>Tenants</option><option>Self + Tenants</option><option>Seller</option></select><label class="mfld-label">Occupied By</label><div class="mfld-err">Occupied By is required</div></div>
+        <div class="mfld third"><select id="r_usage" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Residential</option><option>Commercial</option><option>Mixed</option></select><label class="mfld-label">Usage of property</label><div class="mfld-err">Property Usage is required</div></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><select id="r_identifiable" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Yes</option><option>No</option></select><label class="mfld-label">Property easily identifiable?</label><div class="mfld-err">Please select if property is identifiable</div></div>
+      </div>
+      <button class="sap-btn" onclick="nextSection(3)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Save &amp; Proceed</button>
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section-wrap" id="sw-4">
+    <p class="section-hdr">4 &nbsp; Locality</p>
+    <div style="background:#fff;border-radius:8px;padding:18px;border:1px solid #e0e0e0;margin-bottom:12px">
+      <div class="mrow">
+        <div class="mfld half"><input type="text" id="r_nearestCity" placeholder=" "><label class="mfld-label">Nearest City / Town</label><div class="mfld-err">Nearest City / Town is required</div></div>
+        <div class="mfld half"><select id="r_locCategory" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>MC</option><option>TP</option><option>ZP</option><option>GP</option></select><label class="mfld-label">Location Category</label><div class="mfld-err">Location Category is required</div></div>
+      </div>
+      <p class="sub-title">Distance from</p>
+      <div class="mrow">
+        <div class="mfld third"><input type="text" id="r_distCity" placeholder=" "><label class="mfld-label">Distance From City Centre (in Km)</label></div>
+        <div class="mfld third"><input type="text" id="r_distRailway" placeholder=" "><label class="mfld-label">Railway Station (in Km)</label></div>
+        <div class="mfld third"><input type="text" id="r_distBus" placeholder=" "><label class="mfld-label">Bus Stand (in Km)</label></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld third"><input type="text" id="r_distHospital" placeholder=" "><label class="mfld-label">Hospital (in Km)</label></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld third"><input type="text" id="r_roadWidth" placeholder=" "><label class="mfld-label">Approach Road Width (in ft)</label></div>
+        <div class="mfld third"><select id="r_roadType" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>RCC Road</option><option>Tar Road</option><option>Soil Road</option></select><label class="mfld-label">Approach Road Type</label></div>
+        <div class="mfld third"><select id="r_occupancyPct" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>100%</option><option>50%</option><option>25%</option></select><label class="mfld-label">Occupancy in Project</label></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><select id="r_habitation" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Dense</option><option>Medium</option><option>Low</option></select><label class="mfld-label">Habitation of nearby area</label><div class="mfld-err">Habitation of nearby area is required</div></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld full"><input type="text" id="r_negMarkers" placeholder=" "><label class="mfld-label">Negative Markers (if any)</label></div>
+      </div>
+      <p class="sub-title">Availability</p>
+      <div class="mrow">
+        <div class="mfld third"><select id="r_electricity" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Yes</option><option>No</option></select><label class="mfld-label">Electricity Supply</label></div>
+        <div class="mfld third"><select id="r_water" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Yes</option><option>No</option></select><label class="mfld-label">Water Supply</label></div>
+        <div class="mfld third"><select id="r_drainage" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Yes</option><option>No</option></select><label class="mfld-label">Drainage Line / Connection</label></div>
+      </div>
+      <button class="sap-btn" onclick="nextSection(4)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Save &amp; Proceed</button>
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section-wrap" id="sw-5">
+    <p class="section-hdr">5 &nbsp; Property Plan</p>
+    <div style="background:#fff;border-radius:8px;padding:18px;border:1px solid #e0e0e0;margin-bottom:12px">
+      <div class="mrow">
+      <div class="mfld third"><select id="r_naConversion" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Yes</option><option>No</option><option>NA</option></select><label class="mfld-label">NA Conversion Order</label></div>
+      <div class="mfld third"><input type="text" id="r_naNum" placeholder=" "><label class="mfld-label">NA Order Number</label></div>
+      <div class="mfld third"><input type="date" id="r_naDate" placeholder=" "><label class="mfld-label">NA Order Date</label></div>
+    </div>
+      <div class="mrow">
+      <div class="mfld third"><select id="r_layoutAuth" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>TP</option><option>ZP</option><option>GP</option><option>Licensed Surveyor</option><option>NA</option></select><label class="mfld-label">Layout Plan Approving Authority</label></div>
+      <div class="mfld third"><input type="text" id="r_layoutNum" placeholder=" "><label class="mfld-label">Layout Plan Approval No</label></div>
+      <div class="mfld third"><input type="date" id="r_layoutDate" placeholder=" "><label class="mfld-label">Layout Plan Approval Date</label></div>
+    </div>
+      <div class="mrow">
+      <div class="mfld third"><select id="r_buildingAuth" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>TP</option><option>ZP</option><option>GP</option><option>MC</option><option>Licensed Surveyor</option><option>NA</option></select><label class="mfld-label">Building Plan</label></div>
+      <div class="mfld third"><input type="text" id="r_buildingNum" placeholder=" "><label class="mfld-label">Plan Number</label></div>
+      <div class="mfld third"><input type="date" id="r_buildingDate" placeholder=" "><label class="mfld-label">Plan Date</label></div>
+    </div>
+      <div class="mrow">
+      <div class="mfld third"><select id="r_commAuth" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>MC</option><option>TP</option><option>GP</option><option>NA</option></select><label class="mfld-label">Commencement Certificate</label></div>
+      <div class="mfld third"><input type="text" id="r_commNum" placeholder=" "><label class="mfld-label">Commencement Certificate Number</label></div>
+      <div class="mfld third"><input type="date" id="r_commDate" placeholder=" "><label class="mfld-label">Commencement Certificate Date</label></div>
+    </div>
+      <div class="mrow">
+      <div class="mfld third"><select id="r_occAuth" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>MC</option><option>TP</option><option>GP</option><option>NA</option></select><label class="mfld-label">Occupancy / Completion / Building Usage Cert</label></div>
+      <div class="mfld third"><input type="text" id="r_occNum" placeholder=" "><label class="mfld-label">Occupancy / Completion Certificate Number</label></div>
+      <div class="mfld third"><input type="date" id="r_occDate" placeholder=" "><label class="mfld-label">Occupancy / Completion Certificate Date</label></div>
+    </div>
+      <div class="mrow">
+      <div class="mfld third"><select id="r_subplotAuth" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>TP</option><option>ZP</option><option>GP</option><option>Licensed Surveyor</option><option>NA</option></select><label class="mfld-label">Sub Plotting Plan</label></div>
+      <div class="mfld third"><input type="text" id="r_subplotNum" placeholder=" "><label class="mfld-label">Sub Plotting Plan Approval No</label></div>
+      <div class="mfld third"><input type="date" id="r_subplotDate" placeholder=" "><label class="mfld-label">Sub Plotting Plan Approval Date</label></div>
+    </div>
+      <button class="sap-btn" onclick="nextSection(5)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Save &amp; Proceed</button>
+    </div>
+  </div>
+
+  <!-- SECTION 6 NDMA -->
+  <div class="section-wrap" id="sw-6">
+    <p class="section-hdr">6 &nbsp; NDMA Guidelines</p>
+    <div style="background:#fff;border-radius:8px;padding:18px;border:1px solid #e0e0e0;margin-bottom:12px">
+      <div class="mrow">
+        <div class="mfld third"><select id="r_seismic" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>II</option><option>III</option><option>IV</option><option>V</option></select><label class="mfld-label">Property falls under Seismic Zone</label><div class="mfld-err">Seismic Zone is required</div></div>
+        <div class="mfld third"><select id="r_flood" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Yes</option><option>No</option></select><label class="mfld-label">Property falls under Flood Zone</label></div>
+        <div class="mfld third"><select id="r_cyclone" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Yes</option><option>No</option></select><label class="mfld-label">Property falls under Cyclone Zone</label></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld third"><select id="r_landslide" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Yes</option><option>No</option></select><label class="mfld-label">Property falls under Landslide Prone Zone</label></div>
+        <div class="mfld third"><select id="r_crZone" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Yes</option><option>No</option></select><label class="mfld-label">Property falls under CR Zone</label></div>
+        <div class="mfld third"><select id="r_demolRisk" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>High</option><option>Medium</option><option>Low</option></select><label class="mfld-label">Property falls under Demolition Risk</label></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><select id="r_demolDetails" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Demolition List</option><option>Forest Land</option><option>Govt Land</option><option>Govt Notification</option><option>Road Widening</option><option>NA</option></select><label class="mfld-label">Demolition Risk Details</label></div>
+        <div class="mfld half"><select id="r_ndmaFollow" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Yes</option><option>No</option></select><label class="mfld-label">Property Follows NDMA Guidelines</label></div>
+      </div>
+      <button class="sap-btn" onclick="nextSection(6)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Save &amp; Proceed</button>
+    </div>
+  </div>
+
+  <!-- SECTION 7 BOUNDARIES -->
+  <div class="section-wrap" id="sw-7">
+    <p class="section-hdr">7 &nbsp; Boundaries &amp; Dimensions</p>
+    <div style="background:#fff;border-radius:8px;padding:18px;border:1px solid #e0e0e0;margin-bottom:12px">
+      <table class="bnd-table">
+        <thead><tr><th>Directions</th><th>As per documents</th><th>As per site</th><th>As per plan</th></tr></thead>
+        <tbody>
+          <tr><td class="dir">North</td><td><input type="text" id="r_northDoc" placeholder=" " class="filled"></td><td><input type="text" id="r_northSite" placeholder=" " class="filled"></td><td><input type="text" id="r_northPlan" placeholder=" " class="filled"></td></tr>
+          <tr><td class="dir">South</td><td><input type="text" id="r_southDoc" placeholder=" " class="filled"></td><td><input type="text" id="r_southSite" placeholder=" " class="filled"></td><td><input type="text" id="r_southPlan" placeholder=" " class="filled"></td></tr>
+          <tr><td class="dir">East</td><td><input type="text" id="r_eastDoc" placeholder=" " class="filled"></td><td><input type="text" id="r_eastSite" placeholder=" " class="filled"></td><td><input type="text" id="r_eastPlan" placeholder=" " class="filled"></td></tr>
+          <tr><td class="dir">West</td><td><input type="text" id="r_westDoc" placeholder=" " class="filled"></td><td><input type="text" id="r_westSite" placeholder=" " class="filled"></td><td><input type="text" id="r_westPlan" placeholder=" " class="filled"></td></tr>
+        </tbody>
+      </table>
+      <div class="mrow">
+        <div class="mfld half"><select id="r_bndMatch" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Yes</option><option>No</option></select><label class="mfld-label">Boundaries Matching</label><div class="mfld-err">Boundaries Matching selection is required</div></div>
+        <div class="mfld half"><select id="r_marketability" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Good</option><option>Average</option><option>Poor</option></select><label class="mfld-label">Marketability</label><div class="mfld-err">Marketability selection is required</div></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld full"><textarea id="r_bndRemarks" rows="3" placeholder=" "></textarea><label class="mfld-label">Boundary Remarks in Detail</label><div class="mfld-err">Boundary Remarks are required</div></div>
+      </div>
+      <button class="sap-btn" onclick="nextSection(7)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Save &amp; Proceed</button>
+    </div>
+  </div>
+
+  <!-- SECTION 8 -->
+  <div class="section-wrap" id="sw-8">
+    <p class="section-hdr">8 &nbsp; Structural Details</p>
+    <div style="background:#fff;border-radius:8px;padding:18px;border:1px solid #e0e0e0;margin-bottom:12px">
+      <div class="mrow">
+        <div class="mfld half"><select id="r_structType" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>RCC</option><option>Load Bearing</option></select><label class="mfld-label">Type of Structure</label><div class="mfld-err">Type of Structure is required</div></div>
+        <div class="mfld half"><select id="r_roofType" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>ACC Sheet</option><option>Stone Patti</option><option>Tin Sheet</option><option>Terracotta Tiles</option><option>RCC</option></select><label class="mfld-label">Type of Roof</label><div class="mfld-err">Type of Roof is required</div></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><input type="text" id="r_floorsPermissible" placeholder=" "><label class="mfld-label">No. of Floors Permissible</label><div class="mfld-err">No. of Floors Permissible is required</div></div>
+        <div class="mfld half"><input type="text" id="r_floorsActual" placeholder=" "><label class="mfld-label">No. of Floors - Actual</label><div class="mfld-err">No. of Floors - Actual is required</div></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><input type="text" id="r_unitsFloor" placeholder=" "><label class="mfld-label">No. of Units / Flats per Floor</label><div class="mfld-err">No. of Units / Flats per Floor is required</div></div>
+        <div class="mfld half"><select id="r_quality" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Good</option><option>Average</option><option>Poor</option></select><label class="mfld-label">Quality of Construction</label><div class="mfld-err">Quality of Construction is required</div></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><input type="text" id="r_propAge" placeholder=" "><label class="mfld-label">Property Age (Years)</label><div class="mfld-err">Property Age is required</div></div>
+        <div class="mfld half"><input type="text" id="r_residualAge" placeholder=" "><label class="mfld-label">Residual Age (Years)</label><div class="mfld-err">Residual Age is required</div></div>
+      </div>
+      <button class="sap-btn" onclick="nextSection(8)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Save &amp; Proceed</button>
+    </div>
+  </div>
+
+  <!-- SECTION 9 -->
+  <div class="section-wrap" id="sw-9">
+    <p class="section-hdr">9 &nbsp; Violation</p>
+    <div style="background:#fff;border-radius:8px;padding:18px;border:1px solid #e0e0e0;margin-bottom:12px">
+      <div class="mrow">
+        <div class="mfld full"><select id="r_demolViolation" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Yes</option><option>No</option></select><label class="mfld-label">Demolition risk due to violation?</label><div class="mfld-err">Demolition Risk selection is required</div></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld full"><select id="r_encroachment" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Yes</option><option>No</option></select><label class="mfld-label">Encroachment of land?</label><div class="mfld-err">Encroachment selection is required</div></div>
+      </div>
+      <button class="sap-btn" onclick="nextSection(9)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Save &amp; Proceed</button>
+    </div>
+  </div>
+
+  <!-- SECTION 10 VALUATION -->
+  <div class="section-wrap" id="sw-10">
+    <p class="section-hdr">10 &nbsp; Valuation</p>
+    <div style="background:#fff;border-radius:8px;padding:18px;border:1px solid #e0e0e0;margin-bottom:12px">
+      <table class="val-table">
+        <thead><tr><th colspan="2">As per</th><th>Area</th><th>Rate per sq.ft</th><th>Valuation</th></tr></thead>
+        <tbody>
+          <tr><td class="cat-hdr" rowspan="3">Land</td><td class="row-lbl">Document (L1)</td><td><input type="number" id="r_l1Area" value="0" oninput="calcVal('l1')" class="filled"></td><td><input type="number" id="r_l1Rate" value="0" oninput="calcVal('l1')" class="filled"></td><td class="auto" id="rv_l1">0</td></tr>
+          <tr><td class="row-lbl">Plan (L2)</td><td><input type="number" id="r_l2Area" value="0" oninput="calcVal('l2')"></td><td><input type="number" id="r_l2Rate" value="0" oninput="calcVal('l2')"></td><td class="auto" id="rv_l2">0</td></tr>
+          <tr><td class="row-lbl">Site (L3)</td><td><input type="number" id="r_l3Area" value="0" oninput="calcVal('l3')" class="filled"></td><td><input type="number" id="r_l3Rate" value="0" oninput="calcVal('l3')" class="filled"></td><td class="auto" id="rv_l3">0</td></tr>
+          <tr><td class="cat-hdr" rowspan="3">Construction</td><td class="row-lbl">Document (C1)</td><td><input type="number" id="r_c1Area" value="0" oninput="calcVal('c1')"></td><td><input type="number" id="r_c1Rate" value="0" oninput="calcVal('c1')"></td><td class="auto" id="rv_c1">0</td></tr>
+          <tr><td class="row-lbl">Plan (C2)</td><td><input type="number" id="r_c2Area" value="0" oninput="calcVal('c2')" class="filled"></td><td><input type="number" id="r_c2Rate" value="0" oninput="calcVal('c2')" class="filled"></td><td class="auto" id="rv_c2">0</td></tr>
+          <tr><td class="row-lbl">Site (C3)</td><td><input type="number" id="r_c3Area" value="0" oninput="calcVal('c3')"></td><td><input type="number" id="r_c3Rate" value="0" oninput="calcVal('c3')"></td><td class="auto" id="rv_c3">0</td></tr>
+        </tbody>
+      </table>
+      <p class="sub-title">Other Details</p>
+      <div class="mrow">
+        <div class="mfld half"><input type="text" id="r_amenities" placeholder=" "><label class="mfld-label">Amenities</label><div class="mfld-err">Amenities is required</div></div>
+        <div class="mfld half"><input type="number" id="r_amenitiesVal" value="0" placeholder=" "><label class="mfld-label">Value of Amenities (D)</label></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><select id="r_liftAvail" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Yes</option><option>No</option></select><label class="mfld-label">Lift Available?</label><div class="mfld-err">Lift Available? is required</div></div>
+        <div class="mfld half"><input type="number" id="r_bldgHeight" value="0" placeholder=" "><label class="mfld-label">Height of Building(in m.)</label></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><input type="number" id="r_realizableVal" value="0" placeholder=" " class="filled"><label class="mfld-label">Realizable Value after completion</label></div>
+        <div class="mfld half"><select id="r_constStage" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Foundation</option><option>Plinth</option><option>RCC</option><option>Brick Work</option><option>Plaster</option><option>Tiling</option><option>Internal Finishing</option><option>Completed</option></select><label class="mfld-label">Construction Stage</label><div class="mfld-err">Construction Stage is required</div></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><select id="r_constPct" onchange="this.classList.toggle('has-val',!!this.value)"><option>0%</option><option>10%</option><option>20%</option><option>30%</option><option>40%</option><option>50%</option><option>60%</option><option>70%</option><option>80%</option><option>90%</option><option>100%</option></select><label class="mfld-label">Construction %</label></div>
+        <div class="mfld half"><input type="number" id="r_currentStageVal" value="0" placeholder=" " class="filled"><label class="mfld-label">Valuation at current stage</label></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld full"><input type="number" id="r_govtVal" value="0" placeholder=" "><label class="mfld-label">Valuation as per Govt. guideline</label></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><input type="number" id="r_customerEst" value="0" placeholder=" "><label class="mfld-label">Estimate Amount shared by customer</label></div>
+        <div class="mfld half"><input type="number" id="r_valuerEst" value="0" placeholder=" " class="filled"><label class="mfld-label">Estimate recommended (by valuer)</label></div>
+      </div>
+      <div class="mrow">
+        <div class="mfld half"><input type="text" id="r_marketRate" placeholder=" " class="filled"><label class="mfld-label">Market rate for similar properties in the locality (Rs/sq.ft)</label></div>
+        <div class="mfld half"><select id="r_constAsPerPlan" onchange="this.classList.toggle('has-val',!!this.value)"><option value=""></option><option>Yes</option><option>No</option><option>NA</option></select><label class="mfld-label">Construction as per plan / permission / building by laws?</label></div>
+      </div>
+      <button class="sap-btn" onclick="nextSection(10)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Save &amp; Proceed</button>
+    </div>
+  </div>
+
+  <!-- SECTION 11 FLOOR BUA -->
+  <div class="section-wrap" id="sw-11">
+    <p class="section-hdr">11 &nbsp; Floor Wise Built-up Area</p>
+    <div style="background:#fff;border-radius:8px;padding:18px;border:1px solid #e0e0e0;margin-bottom:12px">
+      <p style="font-size:13px;color:#555;margin-bottom:14px">Floor wise Built-up Area</p>
+      <table class="floor-table" id="floorTable">
+        <thead><tr><th>Floor No.</th><th>Area as per Plan</th><th>Area as per Site</th><th>Remarks</th></tr></thead>
+        <tbody id="floorTbody">
+          <tr><td><input type="text" id="r_floorNo0" value="G.F."></td><td><input type="number" id="r_floorPlan0" value="0"></td><td><input type="number" id="r_floorSite0" value="0"></td><td><input type="text" id="r_floorRem0"></td></tr>
+        </tbody>
+      </table>
+      <button class="add-floor-btn" id="btnAddFloor" onclick="addFloor()">+ Add Floor</button>
+      <button class="sap-btn" onclick="nextSection(11)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Save &amp; Proceed</button>
+    </div>
+  </div>
+
+  <!-- SECTION 12 OBSERVATIONS -->
+  <div class="section-wrap" id="sw-12">
+    <p class="section-hdr">12 &nbsp; Observations</p>
+    <div style="background:#fff;border-radius:8px;padding:18px;border:1px solid #e0e0e0;margin-bottom:12px">
+      <div class="mrow">
+        <div class="mfld full"><textarea id="r_observations" rows="10" placeholder=" "></textarea><label class="mfld-label">Observations</label></div>
+      </div>
+      <button class="sap-btn" onclick="nextSection(12)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Save &amp; Proceed</button>
+    </div>
+  </div>
+
+  <!-- SECTION 13 BILLING -->
+  <div class="section-wrap" id="sw-13">
+    <p class="section-hdr">13 &nbsp; Billing</p>
+    <div style="background:#fff;border-radius:8px;padding:18px;border:1px solid #e0e0e0;margin-bottom:12px">
+      <div class="mrow">
+        <div class="mfld half"><input type="number" id="r_billing" value="1800" placeholder=" " class="filled"><label class="mfld-label">Billing Amount (Rs)</label></div>
+      </div>
+      <button class="sap-btn" onclick="nextSection(13)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> Save &amp; Proceed</button>
+    </div>
+  </div>
+
+</div><!-- end scr-report -->
+
+</div><!-- end main -->
+</div><!-- end layout -->
+
+<!-- BOTTOM BAR -->
+<div class="bot-bar" id="botBar">
+  <div id="bbL"></div>
+  <div id="bbR"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const HF_API_KEY_STORE='hf_anthropic_api_key';
+const HF_CLAUDE_MODELS=['claude-sonnet-4-20250514','claude-opus-4-20250514','claude-haiku-4-5-20251001'];
+function normalizeApiKey(raw){
+  return String(raw||'').trim().replace(/^['"]|['"]$/g,'').trim();
+}
+function getAnthropicApiKey(){return normalizeApiKey(localStorage.getItem(HF_API_KEY_STORE)||'');}
+function saveAnthropicApiKey(k){
+  const key=normalizeApiKey(k);
+  if(!key) return '';
+  localStorage.setItem(HF_API_KEY_STORE,key);
+  return key;
+}
+function clearAnthropicApiKey(){localStorage.removeItem(HF_API_KEY_STORE);}
+function askAnthropicApiKey(reason){
+  const msg=(reason ? reason + '\n\n' : '') + 'Enter Anthropic API key to generate the report. It will be saved only in this browser.';
+  const key=saveAnthropicApiKey(prompt(msg)||'');
+  if(!key) throw new Error('API key is required to generate reports.');
+  toast('API key saved. Starting AI generation...','ok');
+  return key;
+}
+async function anthropicFetchWithRetry(payload){
+  let apiKey=getAnthropicApiKey()||askAnthropicApiKey();
+  let lastError='';
+  for(const model of HF_CLAUDE_MODELS){
+    for(let authTry=0; authTry<2; authTry++){
+      const controller=new AbortController();
+      const timer=setTimeout(()=>controller.abort(),120000);
+      try{
+        const res=await fetch('https://api.anthropic.com/v1/messages',{
+          method:'POST',
+          signal:controller.signal,
+          headers:{
+            'Content-Type':'application/json',
+            'x-api-key':apiKey,
+            'anthropic-version':'2023-06-01',
+            'anthropic-dangerous-direct-browser-access':'true'
+          },
+          body:JSON.stringify({...payload,model})
+        });
+        clearTimeout(timer);
+        if(res.ok) return await res.json();
+        const e=await res.json().catch(()=>({error:{message:'HTTP '+res.status}}));
+        const msg=e.error?.message||('HTTP '+res.status);
+        lastError=msg;
+        if(res.status===401 || res.status===403){
+          clearAnthropicApiKey();
+          apiKey=askAnthropicApiKey('API key rejected/expired. Please paste a valid Anthropic API key.');
+          continue;
+        }
+        if(res.status===404 || /model|not found|invalid/i.test(msg)) break;
+        throw new Error(msg);
+      }catch(err){
+        clearTimeout(timer);
+        if(err.name==='AbortError') throw new Error('AI request timed out. Try smaller files or check internet connection.');
+        if(String(err.message||'').includes('Failed to fetch')){
+          throw new Error('Network/CORS error. Internet check karo, ya Chrome me local file block ho raha hai. Try: HTML ko Chrome me reopen/refresh karo, API key clear karke again generate karo.');
+        }
+        throw err;
+      }
+    }
+  }
+  throw new Error(lastError||'AI generation failed.');
+}
+
+const KN = `╔══════════════════════════════════════════════════════════════════════════════╗
+║        UE&A — HomeFirst TER PATTERN KNOWLEDGE NOTES                        ║
+║        Extracted from 59 Real Cases — Bhopal Region                        ║
+║        "Agar Aisa Hai To Aisa Karo" — Condition-Based Rules                ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TYPE 1 — OPEN PLOT (62% cases — Most Common)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CONDITION: Property Type = Open Plot / Vacant Land (Age = 0, No construction)
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+S1. GENERAL DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Project Pin Code:
+    → Google Maps pe property location click karo → pin code wahan dikhta hai
+    → Field form se mat lo — always Google Maps se verify karo
+
+  Latitude / Longitude:
+   
+    → Example: "23.3075°N 77.4472°E" → Lat=23.3075, Lng=77.4472
+    → Google Maps screenshot se milta hai 
+    → KISI AUR SOURCE SE MAT LO — only Google Maps screenshot provided by field officer 
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+S2. PROPERTY OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+  → Property Type = ROW HOUSE (portal mein Open Plot option nahi hota islye rowhouse use kro)
+  → Property Category = INDIVIDUAL
+  → Type of Loan = P+C (ya jo field form mein ho)
+  → Project Name = NA (ALWAYS NA for open plot — koi project nahi hota)
+  → RERA = NA
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+S3. VISIT DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Address as per Legal Document:
+    → ATS / Sale Deed se lo
+    → PLOT AREA LIKHNA NAHI HAI address mein
+    → Format: "PROPERTY AT, OPEN PLOT NO. [X], PART OF K.H.NO. [Y],
+               P.H.NO. [Z], [COLONY NAME], GRAM - [GRAM],
+               TEHSIL- HUZUR, DIST. BHOPAL, M.P. [PIN]"
+    → Dimensions (16×40 etc.) ADDRESS MEIN NAHI LIKHTE
+
+  Address as per Site:
+    → SAME as Legal Document address (dono identical hoti hain)
+    → Copy-paste karo legal address — change nahi karna
+
+  Nearby Landmark:
+    → PAHLE: Field form mein kuch likha hai? → Wahi use karo
+    → AGAR NAHI: Google Maps pe property location kholo →
+                 500m radius mein jo sabse famous/visible jagah ho
+                 (school, temple, hospital, main road, college) → wahi likhna
+    → Format: "VNS COLLEGE" / "GRAM PANCHAYAT OFFICE" / "PETROL PUMP"
+
+  Occupancy Status = VACANT
+  Occupied By = NA (Vacant)
+  Usage = RESIDENTIAL
+  Name on Door = NA
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+S4. LOCALITY
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Distance (Railway / Bus Stand / Hospital):
+    → Field form mein distances hain → wahi use karo
+    → Agar field form mein nahi → Google Maps se approximate measure karo
+
+  Occupancy in Project:
+    → DO SOURCES se decide karo:
+      1. Site photos dekho — kitne plots mein construction ho rahi hai?
+      2. Google Maps satellite view dekho — area kitna developed hai?
+    → 0-25% plots bane hain → 25% (Low)
+    → 25-50% plots bane hain → 50% (Moderate)
+    → Note: ROAD WIDTH se occupancy mat dekho — direct photo/map se dekho
+
+  Habitation of Nearby Area:
+    → Same logic — site photos + Google Maps satellite
+    → Sparse housing visible → Low
+    → Some houses scattered → Moderate
+    → Dense area → High
+
+  Road Width:
+    → 15 ft = default (90% cases)
+    → Field form mein likha ho → wahi use karo
+
+  Electricity = YES (street lights visible in site photos also alwys yes )
+  Water = yes, Drainage = yes (open plots)
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+S5. PROPERTY PLAN
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+  → NA Conversion = NA
+  → Layout Plan = Licensed Surveyor (GP) / Municipal Corp (Municipal)
+  → Building Plan = NA (open plot, no construction)
+  → Commencement Certificate = NA
+  → Occupancy Certificate = NA
+  → Sub Plotting Plan = Licensed Surveyor (if colony layout available)
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+S7. BOUNDARIES
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+  → Fill from ATS/Sale Deed / Field Form
+  → Common patterns:
+       Pattern 1: N=PLOT N+1, S=PLOT N-1, E=ROAD, W=PLOT X (most common)
+       Pattern 2: Corner plot — 2 sides ROAD, 2 sides PLOT NO.
+       Pattern 3: N=COLONY ROAD, S=PLOT, E=PLOT, W=COLONY ROAD
+
+  Boundaries Matching = YES (open plots mein almost always)
+  Marketability = Avg. (ALWAYS for open plot — all 36 cases same)
+
+  Boundary Remarks in Detail:
+    → SIRF 1 LINE LIKHNA HAI:
+    → AGAR IDENTIFIED:
+         "PROPERTY IS IDENTIFIED AS PER ARCHITECT LAYOUT PLAN."
+    → AGAR NOT IDENTIFIED:
+         "PROPERTY IS NOT IDENTIFIED layout required ."
+
+  ★ IDENTIFICATION RULE ★
+    → Identification SIRF architect layout plan mella ho 
+    → Agar architect layout plan mila hai → IDENTIFIED
+    → Agar layout plan nahi mila → UNIDENTIFIED (age se mat karo)
+    → Site photos se bhi surround area analyze karo
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+S8. STRUCTURAL DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+  → Type of Structure = NA (Open Plot)
+  → Type of Roof = NA
+  → Floors Permissible = G+1 (PROPOSED)
+  → Floors Actual = G.F. PROPOSED (ya G+0 PROPOSED)
+  → Age = 0
+  → Residual Age = 60
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+S10. VALUATION — CRITICAL RULES FOR OPEN PLOT
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+  BUA (Built-up Area) Rules:
+  ★★★ MOST IMPORTANT ★★★
+
+  CASE A — Architect Map NAHI mila:
+    → BUA likhna POSSIBLE NAHI
+    → C1, C2, C3 = 0 (no construction value)
+    → Observation mein likhna: "BUILDING PLAN NOT OBTAINED"
+    → Const estimate = as per HF policy only
+
+  CASE B — Architect Map MILA:
+    → Map se dekho customer kitna banana chahta hai:
+       Option 1: GF only = Plot area × 1 (1000 sqft plot → 1000 sqft BUA)
+       Option 2: G+1 = Plot area × 2 (1000 sqft → 2000 sqft BUA)
+       Option 3: Partial GF = 600 sqft on 1000 sqft plot (map se dekhna)
+    → C2 (Plan) = Map mein jo diya gaya construction area × const rate
+    → C3 (Site) = 0 (abhi kuch bana nahi)
+    → Realizable Value = L3 + C2 + Amenities
+
+  LAND Valuation (same in both cases):
+    → L1 = Plot area (as per document) × land rate
+    → L3 = Plot area (as per site) × land rate
+    → Land rate = market enquiry se
+
+  Other fields:
+    → Const % = 0%
+    → Construction Stage = Open Plot
+    → Lift = No, Height = 0
+    → Amenities = NONE / 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+S12. OBSERVATIONS — STANDARD 15 POINTS FOR OPEN PLOT
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+  1. GIVEN XEROX COPY OF ATS/DRAFT/SALE DEED EXECUTED BETWEEN
+     [SELLER NAME] (SELLER) AND [BUYER NAME] (BUYER).
+  2. DURING VISIT [PERSON MET] MET AT SITE (RELATIVE/OWNER).
+     CONTACT NO. [X]. VALUATION PURPOSE CLEARLY EXPLAINED.
+  3. RATE CONFIRMED FROM MARKET ENQUIRY.
+  4. PROPERTY SITUATED IN [COLONY], SURROUNDING AREA IS
+     RESI-CUM-AGRI ZONE. DEVELOPMENT APPROX [25/50]%.
+  5. AT SITE PROPERTY IS OPEN PLOT DEMARCATED BY LIME/BRICK MARKS.
+  6. AS PER DOCUMENT AND ACTUAL, LAND AREA IS [DIMS] = [AREA] SQFT.
+  7. PROPERTY BOUNDARIES APPROXIMATELY MATCHING WITH DOCUMENTS.
+  8. BUILDING PERMISSION AND MAP NOT OBTAINED.  ← agar map nahi mila
+     OR: BUILDING PLAN RECEIVED AS PER ARCHITECT MAP.  ← agar mila
+  9. BUILDING ESTIMATE NOT PROVIDED —
+     CONST COST CONSIDERED AS PER HOME FIRST POLICY.
+  10. CONST COST CONSIDERED AFTER COMPLETION OF WORK.
+  11. CLEAR LEGAL OPINION TO BE TAKEN REGARDING LAND USES.
+  12. CREDIT TEAM TO VERIFY OWNERSHIP DOCUMENTS PRIOR DISBURSEMENT.
+  13. GPS COORDINATES: LAT [X]°N, LONG [Y]°E (DATE: [DD MMM YYYY]).
+  14. KHASRA SCREENSHOT TAKEN FROM MPBHULEKH PORTAL AT SITE.
+  15. VALUER NOT RESPONSIBLE FOR ANY LEGAL DISPUTE.
+
+PLOT SIZE PATTERNS (from 36 cases):
+  → 450 sqft : Small colony plot, occupancy mostly 25%
+  → 500-600 sqft : MOST COMMON (23 cases) — standard plot
+  → 601-800 sqft : Medium plot
+  → 1000+ sqft  : Large / 2 plots combined
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TYPE 2 — RCC HOUSE / INDIVIDUAL HOUSE (34% cases)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CONDITION: Structure = RCC / R.C.C / Load Bearing | Age > 0
+
+SUB-CONDITIONS:
+
+  A) NEW RCC HOUSE (Age 1-10 yrs):
+     → Floors: G+1 typical (BUA = Plot × 2 approx)
+     → Marketability = Avg. always
+     → Road Width = 15 ft mostly
+     → Occupancy = 50% moderate (developed area)
+     → Area Limits = Municipal mostly
+     → Valuation: Land (L3) + Construction (C3) both fill karo
+     → Const rate = as per HF policy (₹1400-1600/sqft typically)
+     → Residual Age = 55-60 yrs
+
+  B) MID AGE RCC (Age 10-20 yrs):
+     Cases: ARMAN SHREEF (15yr), SHABNAM KHAN (11yr), NEERAJ (3yr)
+     → Depreciation consider karo
+     → Residual Age = 60 - age
+     → Road sometimes 10 ft (older colony)
+     → BUA = Floors × Plot size (approx)
+
+  C) OLD RCC (Age >20 yrs):
+     Cases: Mohammad Imran (25yr), Kailash Kushwaha (40yr), Nandu (30yr)
+     → Structure may have MIXED type (RCC + Tin Shed like Kailash)
+     → Residual Age = 60 - age (can be as low as 20 yrs)
+     → Marketability = Avg. (still same)
+     → TOP-UP loan possibility higher for old properties
+
+S8 Rules for RCC:
+  → Type of Structure = RCC
+  → Type of Roof = RCC Slab (most cases)
+              or = Stone Patti (old houses)
+              or = Tin Sheet (mixed like Kailash case)
+  → No. of Floors Permissible = G+1 or G+2 (as per GP/Municipal norms)
+  → Quality = Average (almost all cases)
+
+Boundary patterns for RCC:
+  → North/South = HOUSE OF [NEIGHBOUR NAME] or PLOT NO.
+  → East/West = ROAD (corner house common)
+  → Named boundaries (BALCHAND, RAJENDRA etc.) = OLD established colony
+
+S10 Valuation for RCC House:
+  → L1 = Land area as per document
+  → L3 = Land area as per site
+  → C3 = BUA × Construction rate
+  → If under construction: Const % fill karo, C3 = current work value
+  → Realizable Value = L3 + C3 + Amenities
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TYPE 3 — APARTMENT / FLAT (10% cases)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CONDITION: "FLAT NO." in address | City = TOWN | Floors > 3
+
+KEY DIFFERENCE from other types:
+  → Location = TOWN (not BHOPAL/Rural)
+  → Area Limits = MUNICIPAL (always for flats)
+  → Marketability = AVERAGE (capital A — not "Avg.")
+  → Property Category = PROJECT
+  → RERA number may be required
+
+Cases found:
+  Dharmendra Jain — Flat 503, 5th Floor, 7 yr old, 7 floors building
+  MOHAN SAHARE — Flat T-10, 3rd Floor, 1 yr old, 4 floors (Jasmine project)
+  Nandu Chaudhari — Flat 13, GF, 30 yr old, 2 floors (Surya Homes)
+  Ravi Sen — Flat LIG-4/13, 4th Floor, 13 yr old, 5 floors (Patanjali)
+  Saba Bee — Flat G-01, GF, 6 yr old, 5 floors (Noor Mahal)
+  pratap — Flat T-2, 2 yr old, 1 floor
+
+S2 for Flats:
+  → Property Category = PROJECT
+  → Property Type = Apartment
+  → Population = >1 Lac (town/city area)
+  → Rural/Urban = Urban
+
+S3 for Flats:
+  → Society Board Name = [SOCIETY NAME] (mandatory)
+  → Name on Door = may have nameplate
+
+S7 Boundaries for Flats:
+  → North = FLAT NO. [adjacent]
+  → South = FLAT NO. [adjacent] AND STAIRS (common)
+  → East = COLONY ROAD / CORRIDOR / COMMON PASSAGE
+  → West = FLAT NO. [adjacent] / STAIRS
+
+S10 Valuation for Flats:
+  → LAND COMPONENT = 0 (no land for flat buyer)
+  → Only Construction value matters
+  → C1 = As per document (sale agreement value)
+  → C3 = Flat BUA × market rate per sqft
+  → Flat/Shop Rate = market rate (NOT land rate)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TYPE 4 — UNDER CONSTRUCTION (3% cases)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CONDITION: Structure = U/C or U/c | Age = 0 | Some construction visible
+
+Cases: mohd akram (1000 sqft, 2000 BUA expected), Rehbar (600 sqft, 0 BUA)
+
+Rules:
+  → Construction Stage = Foundation/Plinth/Brick Work/RCC (whatever seen)
+  → Construction % = actual % observed at site (0-90%)
+  → Valuation at current stage = Land value + (Const rate × % done × BUA)
+  → Realizable value = Land + Full const estimate
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TYPE 5 — TOP-UP LOAN (special case)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CONDITION: File name has TOPUP | Loan Type = TOP-UP
+
+Case: Om Prakash Gupta TOPUP — RCC, 1200 sqft, 2400 BUA, 3 floors, 2 yr old
+
+Rules:
+  → All 3 boundaries = LAND OF SELLER (unplotted area around house)
+  → Property is already constructed
+  → Valuation = current market value (not fresh purchase)
+  → Documents = existing sale deed / previous loan documents
+  → Const % = 100% (already complete)
+  → Focus on current market rate, not original cost
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NDMA RULES — FIXED FOR ALL BHOPAL CASES (100% consistent)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Seismic Zone      = Zone II  (ALL Bhopal cases)
+  Flood Zone        = NO
+  Cyclone Zone      = NO
+  Landslide Zone    = NO
+  CR Zone           = NO (or LOW)
+  Demolition Risk   = LOW (mostly NA)
+  NDMA Followed     = YES
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADDRESS FORMAT RULES (100% consistent across all cases)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Legal Address Format:
+  OPEN PLOT (GP):
+  "PROPERTY AT, OPEN PLOT NO. [X], PART OF K.H.NO. [Y], P.H.NO. [Z],
+   [COLONY NAME], GRAM - [GRAM], TEHSIL- HUZUR, DIST. BHOPAL, M.P. [PIN]"
+
+  HOUSE (Municipal):
+  "PROPERTY AT, RESIDENTIAL HOUSE NO.[X], PART OF K.H.NO. [Y],
+   WARD NO. [Z], [COLONY], [GRAM/AREA], TEHSIL- HUZUR, DIST. BHOPAL, M.P."
+
+  FLAT:
+  "PROPERTY AT, FLAT NO. [X], [FLOOR] FLOOR, [BUILDING/PROJECT],
+   PART OF K.H.NO. [Y], P.H.NO. [Z], [AREA], BHOPAL, M.P."
+
+KEY: Legal Address = Site Address (almost always same in these cases)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AREA LIMITS RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  If address has "GRAM" → Area Limits = GRAM PANCHAYAT
+  If address has "WARD NO." → Area Limits = MUNICIPAL CORPORATION
+  If address has society/apartment name → Area Limits = MUNICIPAL
+  City = TOWN → always MUNICIPAL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MARKETABILITY RULE (100% consistent)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ALL 59 cases = AVERAGE marketability
+  Open Plot rural = "Avg."
+  Apartment/flat = "Average" (full word)
+  RCC House = "Avg."
+  → NEVER "Good" or "Poor" in these cases
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUICK DECISION TREE — "Kaunsa Case Hai?"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  FLAT/503 ya T-10 ya LIG in address?
+       YES → TYPE 3 (Apartment) — Land=0, BUA only
+       NO  ↓
+
+  TOPUP in file name?
+       YES → TYPE 5 — Existing property re-valuation
+       NO  ↓
+
+  Age = 0 AND no construction?
+       YES → TYPE 1 (Open Plot) — C=0, Land only
+       NO  ↓
+
+  Some construction started but not complete?
+       YES → TYPE 4 (Under Construction) — partial valuation
+       NO  ↓
+
+  Age > 0, RCC complete?
+       YES → TYPE 2 (RCC House) — Land + BUA × rate`;
+
+// ── STATE ──────────────────────────────────────────────────────────────
+let CS=null, UF={gps:[],ats:[],email:[],form:[]}, FO={map:null,layout:null,bua:null};
+let curScreen='dash', curSection=1;
+
+const HF_MODEL_VERSION='2.4-smart-learning';
+const HF_MODEL_SPEC={
+  "version": "1.1",
+  "name": "HF TER AI Model Preparation - Learning Layer",
+  "purpose": "Generate HomeFirst TER JSON with property-type router, correction memory, careful visit-data reading, handwriting understanding, and deep site-photo analysis.",
+  "status": "model-preparation-not-deployed",
+  "property_type_router": [
+    "open_plot_vacant_land",
+    "rcc_house_individual_house",
+    "apartment_flat",
+    "under_construction",
+    "topup_loan",
+    "shop_office"
+  ],
+  "global_rules": {
+    "selected_property_type_only": "Use only the selected property type logic. Do not mix Open Plot rules into RCC/Flat/Shop etc.",
+    "no_forced_guess": "If a value is not confidently readable, keep it blank/NA and write it in audit. Do not invent important values.",
+    "human_review_required": "Final portal submit must be verified by user before Save & Proceed/submit.",
+    "source_priority": [
+      "Legal documents/ATS/Sale Deed for legal address, document boundaries, owner/seller/buyer, plot area",
+      "Field Visit Form for person met, relationship, distances, property observed status, local remarks",
+      "GPS/Google map screenshot for latitude/longitude and pin code",
+      "Site photos for actual site condition, approach road, occupancy, construction stage, utilities, habitation",
+      "User typed notes/corrections override AI extraction"
+    ]
+  },
+  "new_rules_v1_1": {
+    "visit_data_careful_reading": {
+      "enabled": true,
+      "instructions": [
+        "Read Field Visit Form very carefully before filling Visit Details and Locality.",
+        "If handwriting is unclear, try multiple interpretations using context from address, owner name, relationship, mobile number and nearby landmark.",
+        "Do not confuse person met with owner name unless explicitly same.",
+        "Do not confuse landmark with boundary or address.",
+        "Distances written in field form should be preferred over AI estimate unless clearly impossible.",
+        "If handwriting is partially unclear, put best reading in field and mention uncertainty in audit_notes."
+      ],
+      "fields_affected": [
+        "s3.personMet",
+        "s3.relationship",
+        "s3.ownerName",
+        "s3.landmark",
+        "s4.distCity",
+        "s4.distRailway",
+        "s4.distBus",
+        "s4.distHospital",
+        "s4.roadWidth",
+        "s4.roadType"
+      ]
+    },
+    "handwriting_understanding_protocol": {
+      "enabled": true,
+      "steps": [
+        "Zoom mentally into handwritten words and compare with common Hindi/English real-estate terms.",
+        "Use nearby printed labels to identify which handwritten value belongs to which field.",
+        "Use property address/context to resolve spelling variants of villages, colonies, names, roads and landmarks.",
+        "Numbers must be checked twice: area, pin code, mobile, distances, road width, lat/lng.",
+        "Never convert unclear 5/6/8/9 digits by guess when it affects valuation or coordinates; flag in audit if unclear."
+      ],
+      "uncertainty_policy": "If confidence < 0.70, keep original-looking text plus audit warning instead of silently changing it."
+    },
+    "site_photo_deep_analysis": {
+      "enabled": true,
+      "instructions": [
+        "Analyze every site photo for what the field officer is trying to show, not only visible OCR text.",
+        "Classify each photo intent: GPS proof, front view, road/approach, boundary, plot demarcation, surrounding development, utility/service, landmark, construction stage, house/flat/shop evidence.",
+        "Use site photos to infer actual occupancy status, under-construction stage, open plot/vacant land status, roof/structure type, road type, approach road width approximation, habitation density and project occupancy percentage.",
+        "Do not use site photo boundary as document boundary. Site photo can support As per site only; As per documents must come from legal document unless same confirmed.",
+        "If photo shows road on one side but document boundary says another side, flag boundary mismatch instead of forcing match.",
+        "If property is MC/municipal area indicators are visible (ward no, municipal board, city colony), do not select GP just because address has gram-like wording; flag for area limit verification."
+      ],
+      "photo_intent_schema": [
+        "gps_coordinates",
+        "front_view",
+        "approach_road",
+        "boundary_side",
+        "surrounding_development",
+        "utility_electricity_water_drainage",
+        "landmark",
+        "construction_stage",
+        "document_photo",
+        "map_layout_photo",
+        "field_form_photo"
+      ]
+    },
+    "audit_and_learning": {
+      "enabled": true,
+      "always_output_audit_notes": true,
+      "audit_note_format": {
+        "field": "section.fieldName",
+        "value_used": "value",
+        "source": "document|field_form|gps|site_photo|map|user_note|correction_memory",
+        "confidence": "0.00-1.00",
+        "reason": "why this value was used",
+        "warning": "blank unless uncertain or potential conflict"
+      },
+      "correction_capture": "When user reports a mistake with screenshot, save wrong value, correct value, reason, property type, section and source conflict. Apply next time for same condition."
+    }
+  },
+  "open_plot_vacant_land_rules": {
+    "scope": "Only when selected property type is Open Plot / Vacant Land",
+    "portal_defaults": {
+      "s2.propCategory": "Individual",
+      "s2.propType": "Row House",
+      "s2.rera": "NA",
+      "s2.projectName": "NA",
+      "s3.occupancy": "Vacant",
+      "s3.usage": "Residential",
+      "s7.marketability": "Average",
+      "s6.seismic": "II",
+      "s6.flood": "No",
+      "s6.cyclone": "No",
+      "s6.landslide": "No",
+      "s6.crZone": "No",
+      "s6.demolRisk": "Low",
+      "s6.ndmaFollow": "Yes"
+    },
+    "boundary_rule": "As per documents from ATS/Sale Deed only. As per site from field form/site inspection. As per plan from architect/layout plan if available. Do not copy site road/form boundary into document boundary unless legal document confirms.",
+    "area_limit_rule": "If Ward No/MC/Municipal Corporation/Nagar Nigam/city colony appears, select MC. If Gram Panchayat/GP only and no municipal indication, select GP. If conflicting, flag in audit_notes instead of guessing.",
+    "valuation_rule": "If architect map not received, C1/C2/C3 = 0 and construction estimate only as policy if needed. Land area/rate from document/site/market enquiry."
+  },
+  "expected_ai_output_additions": {
+    "report": "Existing s1-s12 TER JSON",
+    "audit_notes": "Array of field-level source/confidence/warnings",
+    "photo_analysis": "Array of photo intent + observations",
+    "learning_suggestions": "Array of new correction-memory rules suggested from conflicts"
+  }
+};
+const HF_LEARNING_SEED={
+  "version": "1.1",
+  "learning_memory_type": "seed_rules_and_user_corrections",
+  "rules": [
+    {
+      "id": "area_limit_mc_vs_gp_001",
+      "property_type": "open_plot_vacant_land",
+      "section": "Property Overview",
+      "field": "s2.areaLimits",
+      "mistake_pattern": "AI selected GP when property is actually under MC/Municipal/ward/city area.",
+      "correct_rule": "If document/site/field form has Ward No, MC, Municipal Corporation, Nagar Nigam, or city colony indicators, use MC. If uncertain, flag audit instead of selecting GP.",
+      "apply_next_time": true
+    },
+    {
+      "id": "boundary_source_001",
+      "property_type": "open_plot_vacant_land",
+      "section": "Boundaries & Dimensions",
+      "field": "s7.*Doc",
+      "mistake_pattern": "AI copied site/field-form boundary into As per documents.",
+      "correct_rule": "As per documents boundaries must come from legal document/ATS/Sale Deed only. Field form/site photo can fill As per site, not document boundary unless legal document confirms same.",
+      "apply_next_time": true
+    },
+    {
+      "id": "visit_form_handwriting_001",
+      "property_type": "all",
+      "section": "Visit Details / Locality",
+      "field": "s3.*, s4.*",
+      "mistake_pattern": "AI ignored or misread handwritten field visit form.",
+      "correct_rule": "Read handwritten visit form carefully. Use printed labels around handwriting to map values. If unclear, use contextual best reading and add audit warning with confidence below 0.70.",
+      "apply_next_time": true
+    },
+    {
+      "id": "site_photo_intent_001",
+      "property_type": "all",
+      "section": "Site Photo Analysis",
+      "field": "photo_analysis",
+      "mistake_pattern": "AI treated site photo as simple image and missed what field officer intended to show.",
+      "correct_rule": "Classify photo intent first: GPS, front view, approach road, boundary, development, utility, landmark, construction stage, map/layout, document or field form. Use this intent to support only the relevant TER fields.",
+      "apply_next_time": true
+    }
+  ],
+  "user_corrections": []
+};
+const HF_MODEL_PROMPT="You are HF TER AI Model v1.2 for UE&A HomeFirst reports.\n\nLANGUAGE/STYLE:\n- Think carefully. Output only valid JSON.\n- Do not add markdown.\n- Respect selected property type router. Do not mix rules between property types.\n\nMAIN TASK:\nGenerate HomeFirst TER JSON from uploaded documents, screenshots, field visit form, GPS photo, site photos and user notes.\n\nCRITICAL NEW RULES:\n1. READ VISIT DATA VERY CAREFULLY\n- Field Visit Form is high-priority for Visit Details and Locality.\n- Understand handwriting carefully using printed labels and context.\n- Do not confuse person met, owner, relationship, landmark, distances and road width.\n- If handwriting is unclear, do not silently invent. Use best reading only with audit warning and confidence.\n\n2. HANDWRITING PROTOCOL\n- Cross-check handwritten numbers and words twice.\n- Use context from property address, colony/village names, owner/customer name, mobile number, nearby road/landmark.\n- If number affects valuation/coordinates/pin code and is unclear, keep blank/NA and flag in audit_notes.\n\n3. DEEP SITE PHOTO ANALYSIS\nFor every site photo, first decide what the field officer is trying to photograph:\n- GPS proof / coordinates\n- Front view of property\n- Approach road / road width / road type\n- Boundary side\n- Plot demarcation\n- Surrounding development / occupancy percentage\n- Electricity/water/drainage utility evidence\n- Landmark evidence\n- Construction stage / structure / roof evidence\n- Architect map/layout/document photo\n\nUse photo evidence only for relevant fields.\nDo not use site photo boundary as legal document boundary.\n\n4. SOURCE PRIORITY\nLegal document > Field visit form > GPS/map screenshot > Site photo > user note/correction > inference.\nUser correction overrides all.\n\n5. AUDIT NOTES REQUIRED\nAlways return audit_notes with source and confidence for important fields, especially:\n- pinCode, lat, lng\n- areaLimits, locCategory\n- legalAddress, siteAddress\n- boundaries\n- valuation area/rate\n- construction stage\n- occupancy and usage\n\n6. OUTPUT JSON SHAPE\nReturn:\n{\n  \"report\": { \"s1\":{}, \"s2\":{}, ... \"s12\":{} },\n  \"photo_analysis\": [\n    {\"file\":\"\", \"intent\":\"\", \"observations\":\"\", \"fields_supported\":[], \"confidence\":0.0}\n  ],\n  \"audit_notes\": [\n    {\"field\":\"\", \"value_used\":\"\", \"source\":\"\", \"confidence\":0.0, \"reason\":\"\", \"warning\":\"\"}\n  ],\n  \"learning_suggestions\": [\n    {\"condition\":\"\", \"mistake_prevented\":\"\", \"new_rule\":\"\"}\n  ]\n}\n\nOPEN PLOT / VACANT LAND SPECIAL RULES:\n- Only apply when selected property type = Open Plot / Vacant Land.\n- Portal Property Type = Row House; Property Category = Individual.\n- RERA = NA; Project Name = NA.\n- Occupancy = Vacant; Usage = Residential.\n- Marketability = Average.\n- Bhopal NDMA defaults: Seismic II, Flood No, Cyclone No, Landslide No, CR No, Demolition Risk Low, NDMA Yes.\n- Area Limits: MC if Ward No/MC/Municipal/Nagar Nigam/city colony indicator exists. GP only if clear Gram Panchayat/GP with no MC indicator.\n- Boundaries: STRICT — As per documents MUST come from ATS/Sale Deed/Legal Document only. NEVER copy site photo or field form boundary into As per documents columns. As per site from field form or site photo only. As per plan from architect/layout plan only.\n- If architect map not received: construction value C1/C2/C3 = 0.\n\n7. AREA LIMITS MC vs GP RULE (CRITICAL):\n- If document/site/field form contains ANY of: Ward No, MC, Municipal Corporation, Nagar Nigam, Nagar Palika, Nagar Panchayat, city/urban colony, ward boundary — MUST select MC.\n- GP only when: clear Gram Panchayat indicator AND no municipal/city/ward indicator anywhere.\n- If conflicting signals found — flag in audit_notes with warning, ask user to verify. DO NOT guess.\n\n8. FIELD FORM HANDWRITING CRITICAL RULE:\n- Every handwritten value on field visit form: read carefully, cross-check with context.\n- If handwriting is unclear for IMPORTANT fields (area, lat, lng, pin, distances) — keep field blank and add audit warning with confidence below 0.6.\n- NEVER silently change unclear digits. Keep as-read + flag.\n\n9. PROPERTY TYPE ISOLATION:\n- NEVER mix Open Plot rules into RCC House, Apartment, Shop, etc.\n- Each property type has distinct rules. Use only selected type logic.";
+const HF_LEARNING_STORE='hf_ter_learning_memory_v1_1';
+const HF_LAST_AUDIT_STORE='hf_ter_last_ai_audit_v2';
+function safeJsonParse(s,fallback){try{return JSON.parse(s)}catch{return fallback}}
+function getLearningMemory(){
+  const saved=safeJsonParse(localStorage.getItem(HF_LEARNING_STORE)||'',null);
+  if(saved && Array.isArray(saved.rules)) return saved;
+  const seed=JSON.parse(JSON.stringify(HF_LEARNING_SEED));
+  localStorage.setItem(HF_LEARNING_STORE,JSON.stringify(seed));
+  return seed;
+}
+function setLearningMemory(mem){localStorage.setItem(HF_LEARNING_STORE,JSON.stringify(mem));}
+function getActiveLearningRules(){
+  const mem=getLearningMemory();
+  const t=CS?.propTypeVal||document.getElementById('cType')?.value||'all';
+  return (mem.rules||[]).concat(mem.user_corrections||[]).filter(r=>r.apply_next_time!==false && (r.property_type==='all'||r.property_type===t||!r.property_type));
+}
+function getLearningPrompt(){
+  const rules=getActiveLearningRules();
+  if(!rules.length) return 'No user correction memory yet.';
+  return rules.map((r,i)=>`RULE ${i+1} | TYPE:${r.property_type||'all'} | SECTION:${r.section||''} | FIELD:${r.field||''} | MISTAKE:${r.mistake_pattern||r.wrong_value||''} | CORRECT:${r.correct_rule||r.correct_value||''} | REASON:${r.reason||''}`).join('\n');
+}
+async function fileToDataURL(file){return await new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(fr.result);fr.onerror=reject;fr.readAsDataURL(file);})}
+// ── SCREENSHOT PASTE SUPPORT ───────────────────────────────────────────
+let _ssDataUrl='';
+document.addEventListener('paste',function(e){
+  if(!document.getElementById('scr-learn')?.style.display||document.getElementById('scr-learn').style.display==='none')return;
+  const items=e.clipboardData?.items||[];
+  for(const item of items){
+    if(item.type.startsWith('image/')){
+      const file=item.getAsFile();
+      const fr=new FileReader();
+      fr.onload=ev=>{ _ssDataUrl=ev.target.result; showSSPreview(_ssDataUrl); };
+      fr.readAsDataURL(file);
+      break;
+    }
+  }
+});
+function handleSSdrop(e){
+  e.preventDefault();
+  const file=e.dataTransfer?.files?.[0];
+  if(!file||!file.type.startsWith('image/'))return;
+  const fr=new FileReader();
+  fr.onload=ev=>{ _ssDataUrl=ev.target.result; showSSPreview(_ssDataUrl); };
+  fr.readAsDataURL(file);
+}
+function handleSSfile(inp){
+  const file=inp.files?.[0]; if(!file)return;
+  const fr=new FileReader();
+  fr.onload=ev=>{ _ssDataUrl=ev.target.result; showSSPreview(_ssDataUrl); };
+  fr.readAsDataURL(file);
+}
+function showSSPreview(dataUrl){
+  const w=document.getElementById('ssPreviewWrap'); const img=document.getElementById('ssPreviewImg');
+  if(w&&img){img.src=dataUrl;w.style.display='inline-block';}
+}
+function removeSSPreview(){
+  _ssDataUrl='';
+  const w=document.getElementById('ssPreviewWrap'); if(w)w.style.display='none';
+  const inp=document.getElementById('lm_screenshot'); if(inp)inp.value='';
+}
+
+// ── LEARN TAB SWITCHER ─────────────────────────────────────────────────
+function switchLearnTab(tab){
+  ['report','memory','audit','photos'].forEach(t=>{
+    const btn=document.getElementById('ltab_'+t);
+    const panel=document.getElementById('lpanel_'+t);
+    if(btn)btn.classList.toggle('active',t===tab);
+    if(panel)panel.classList.toggle('active',t===tab);
+  });
+  if(tab==='memory')renderLearningRules();
+  if(tab==='audit')renderAuditNotes();
+  if(tab==='photos')renderPhotoAnalysis();
+}
+
+// ── MEMORY FILTER ──────────────────────────────────────────────────────
+let _memFilter='all';
+function filterMemory(type,btn){
+  _memFilter=type;
+  document.querySelectorAll('#memFilterTabs .lst-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  renderLearningRules();
+}
+
+async function saveLearningRule(){
+  const mem=getLearningMemory();
+  const screenshot=_ssDataUrl||'';
+  const rule={
+    id:'user_'+Date.now(),
+    source:'user_correction',
+    property_type:document.getElementById('lm_propertyType').value,
+    section:document.getElementById('lm_section').value,
+    field:document.getElementById('lm_field').value.trim(),
+    mistake_pattern:document.getElementById('lm_wrong').value.trim(),
+    wrong_value:document.getElementById('lm_wrong').value.trim(),
+    correct_rule:document.getElementById('lm_correct').value.trim(),
+    correct_value:document.getElementById('lm_correct').value.trim(),
+    reason:document.getElementById('lm_reason').value.trim(),
+    confidence:document.getElementById('lm_conf').value,
+    screenshot_saved:!!screenshot,
+    screenshot,
+    created_at:new Date().toISOString(),
+    apply_next_time:true
+  };
+  if(!rule.field && !rule.correct_rule && !rule.reason){toast('Correction details daalo pehle!','err');return;}
+  mem.user_corrections=mem.user_corrections||[];
+  mem.user_corrections.push(rule);
+  setLearningMemory(mem);
+  ['lm_field','lm_wrong','lm_correct','lm_reason'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  removeSSPreview();
+  renderLearningRules();
+  // Update filter badges
+  updateMemFilterBadges();
+  toast('✅ Correction saved! Next report me automatically apply hoga.','ok');
+  // Switch to memory tab to show saved rule
+  setTimeout(()=>switchLearnTab('memory'),1200);
+}
+
+function updateMemFilterBadges(){
+  const mem=getLearningMemory();
+  const uc=mem.user_corrections||[];
+  const counts={'open_plot':0,'rcc_house':0,'apartment':0,'under_construction':0,'topup':0,'shop_office':0};
+  uc.forEach(r=>{ if(counts[r.property_type]!==undefined) counts[r.property_type]++; });
+  document.querySelectorAll('#memFilterTabs .lst-btn').forEach(btn=>{
+    const t=btn.getAttribute('onclick')?.match(/filterMemory\('([^']+)'/)?.[1];
+    if(t && t!=='all' && counts[t]){
+      btn.classList.add('has-items');
+      btn.textContent=t.replace('_',' ').replace(/\b\w/g,c=>c.toUpperCase())+' ('+counts[t]+')';
+    }
+  });
+}
+
+function renderLearningRules(){
+  const el=document.getElementById('learningList'); if(!el)return;
+  const mem=getLearningMemory();
+  const seeds=(mem.rules||[]).map(r=>({...r,_src:'seed'}));
+  const user=(mem.user_corrections||[]).map(r=>({...r,_src:'user'}));
+  let all=[...seeds,...user];
+  if(_memFilter&&_memFilter!=='all') all=all.filter(r=>r.property_type===_memFilter||r.property_type==='all'||!r.property_type);
+  const statsEl=document.getElementById('memStats');
+  if(statsEl) statsEl.textContent='Total: '+all.length+' rules  |  Seed rules: '+seeds.length+'  |  User corrections: '+user.length;
+  if(!all.length){el.innerHTML='<p style="color:#888;font-size:13px;padding:8px">Koi rules nahi hain. Galti hone par report karo.</p>';return;}
+  el.innerHTML=all.map((r,i)=>{
+    const isUser=r._src==='user';
+    const isAuto=r.source==='auto_learning';
+    const badgeCls=isAuto?'auto':isUser?'user':'seed';
+    const badgeTxt=isAuto?'AUTO':'USER';
+    const typeTxt=(r.property_type||'all').replace('_',' ');
+    const wrongHtml=r.wrong_value||r.mistake_pattern?`<div class="cc-row"><span class="cc-lbl">Wrong Value</span><span class="cc-val cc-wrong">❌ ${r.wrong_value||r.mistake_pattern}</span></div>`:'';
+    const correctHtml=`<div class="cc-row"><span class="cc-lbl">Correct / Rule</span><span class="cc-val cc-correct">✅ ${r.correct_rule||r.correct_value||''}</span></div>`;
+    const fieldHtml=r.field?`<div class="cc-row"><span class="cc-lbl">Field</span><span class="cc-val">${r.field}</span></div>`:'';
+    const confHtml=r.confidence?`<div class="cc-row"><span class="cc-lbl">Confidence</span><span class="cc-val">${r.confidence}</span></div>`:'';
+    const proofBtn=r.screenshot_saved&&r.screenshot?`<button class="cc-proof" onclick="showProofImage('${r.id}')">📎 Proof dekho</button>`:'';
+    const delBtn=isUser?`<button class="cc-del" title="Delete" onclick="deleteUserRule('${r.id}')">🗑</button>`:'';
+    return `<div class="correction-card ${badgeCls}">
+      <div class="cc-header">
+        ${isUser||isAuto?`<span class="cc-badge ${badgeCls}">${badgeTxt}</span>`:'<span class="cc-badge seed">SEED</span>'}
+        <span class="cc-type">${typeTxt}</span>
+        <span style="font-size:12px;font-weight:600;color:#333">${r.section||''}</span>
+        ${delBtn}
+      </div>
+      <div class="cc-body">
+        ${fieldHtml}${confHtml}${wrongHtml}${correctHtml}
+        ${r.reason?`<div class="cc-reason">📋 ${r.reason}</div>`:''}
+      </div>
+      ${proofBtn}
+      ${r.created_at?`<div style="font-size:10.5px;color:#aaa;margin-top:6px">Saved: ${r.created_at.slice(0,10)}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function deleteUserRule(id){
+  if(!confirm('Ye rule delete karna hai?'))return;
+  const mem=getLearningMemory();
+  mem.user_corrections=(mem.user_corrections||[]).filter(r=>r.id!==id);
+  setLearningMemory(mem);
+  renderLearningRules();
+  toast('Rule deleted','ok');
+}
+
+function showProofImage(id){
+  const mem=getLearningMemory();
+  const rule=[...(mem.rules||[]),...(mem.user_corrections||[])].find(r=>r.id===id);
+  if(!rule?.screenshot)return;
+  const w=window.open('','_blank','width=800,height=600');
+  w.document.write('<img src="'+rule.screenshot+'" style="max-width:100%;max-height:100vh">');
+}
+
+function exportLearningMemory(){
+  const mem=getLearningMemory();
+  const blob=new Blob([JSON.stringify(mem,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a');
+  a.href=url; a.download='hf_ter_learning_memory_'+new Date().toISOString().slice(0,10)+'.json'; a.click(); URL.revokeObjectURL(url);
+}
+function importLearningMemory(inp){
+  const file=inp.files&&inp.files[0]; if(!file)return;
+  const fr=new FileReader();
+  fr.onload=()=>{try{const mem=JSON.parse(fr.result); if(!Array.isArray(mem.rules)) mem.rules=[]; if(!Array.isArray(mem.user_corrections)) mem.user_corrections=[]; setLearningMemory(mem); renderLearningRules(); toast('Learning memory imported ✓','ok');}catch(e){toast('Invalid memory JSON','err')}};
+  fr.readAsText(file);
+}
+function clearLearningMemoryConfirm(){
+  if(!confirm('User corrections clear karna hai? Seed rules safe rahenge.'))return;
+  const mem=getLearningMemory(); mem.user_corrections=[]; setLearningMemory(mem); renderLearningRules(); toast('User corrections cleared','ok');
+}
+function saveLastAudit(extra){localStorage.setItem(HF_LAST_AUDIT_STORE,JSON.stringify(extra||{}));}
+
+// ── AUDIT TABLE RENDERER ───────────────────────────────────────────────
+function srcChip(src){
+  const s=String(src||'').toLowerCase();
+  if(s.includes('doc')||s.includes('deed')||s.includes('ats')) return '<span class="src-chip src-doc">📄 Document</span>';
+  if(s.includes('form')||s.includes('visit')||s.includes('field')) return '<span class="src-chip src-form">📋 Field Form</span>';
+  if(s.includes('photo')||s.includes('site')) return '<span class="src-chip src-photo">📷 Site Photo</span>';
+  if(s.includes('gps')||s.includes('map')) return '<span class="src-chip src-gps">🗺 GPS/Map</span>';
+  return '<span class="src-chip src-infer">🤔 Inferred</span>';
+}
+function confColor(c){
+  const v=parseFloat(c)||0;
+  if(v>=0.85)return '#2e7d32';
+  if(v>=0.70)return '#f57c00';
+  return '#c62828';
+}
+
+function renderAuditNotes(){
+  const el=document.getElementById('auditList'); if(!el)return;
+  const data=safeJsonParse(localStorage.getItem(HF_LAST_AUDIT_STORE)||'',null);
+  if(!data||!data.audit_notes?.length){
+    el.innerHTML='<p style="color:#888;font-size:13px">Pehle report generate karo.</p>';
+    return;
+  }
+  const notes=data.audit_notes||[];
+  const warnings=notes.filter(n=>n.warning&&n.warning.trim()&&n.warning!=='');
+  let html='';
+  if(warnings.length){
+    html+=`<div style="background:#fff3e0;border:1px solid #ffe0b2;border-radius:8px;padding:10px 14px;margin-bottom:12px">
+      <b style="color:#e65100">⚠️ ${warnings.length} Warning${warnings.length>1?'s':''} — Review Required</b>
+      <ul style="margin:6px 0 0 16px;font-size:12.5px;color:#b45309">
+        ${warnings.map(n=>`<li><b>${n.field}:</b> ${n.warning}</li>`).join('')}
+      </ul>
+    </div>`;
+  }
+  html+=`<div style="overflow-x:auto"><table class="audit-table">
+    <thead><tr><th>Field</th><th>Value Used</th><th>Source</th><th>Confidence</th><th>Warning</th></tr></thead>
+    <tbody>`;
+  notes.forEach(n=>{
+    const conf=parseFloat(n.confidence)||0;
+    const confPct=Math.round(conf*100);
+    const warnHtml=n.warning&&n.warning.trim()&&n.warning!==''?
+      `<div class="warn-chip">⚠️ ${n.warning}</div>`:'<span style="color:#aaa;font-size:11px">—</span>';
+    html+=`<tr>
+      <td><b>${n.field||''}</b>${n.reason?`<br><span style="font-size:11px;color:#777">${n.reason}</span>`:''}</td>
+      <td style="font-weight:500;max-width:160px;word-break:break-word">${n.value_used||'—'}</td>
+      <td>${srcChip(n.source)}</td>
+      <td>
+        <div style="font-size:12px;font-weight:700;color:${confColor(conf)}">${confPct}%</div>
+        <div class="conf-bar"><div class="conf-fill" style="width:${confPct}%;background:${confColor(conf)}"></div></div>
+      </td>
+      <td>${warnHtml}</td>
+    </tr>`;
+  });
+  html+='</tbody></table></div>';
+  // Auto-learning suggestions from last report
+  if(data.learning_suggestions?.length){
+    html+=`<div style="margin-top:16px;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:12px">
+      <b style="color:#1b5e20;font-size:13px">🧠 AI ke khud ke learning suggestions (${data.learning_suggestions.length})</b>
+      <ul style="margin:8px 0 0 16px;font-size:12.5px;color:#2e7d32">
+        ${data.learning_suggestions.map(s=>`<li><b>${s.condition||''}</b>: ${s.new_rule||s.mistake_prevented||''}</li>`).join('')}
+      </ul>
+      <button class="bb-btn" style="background:#2e7d32;color:#fff;margin-top:10px;font-size:12px;padding:7px 14px" onclick="autoSaveLearningFromAI()">💾 Inhe Memory Me Save Karo</button>
+    </div>`;
+  }
+  el.innerHTML=html;
+}
+
+function renderPhotoAnalysis(){
+  const el=document.getElementById('photoAnalysisList'); if(!el)return;
+  const data=safeJsonParse(localStorage.getItem(HF_LAST_AUDIT_STORE)||'',null);
+  if(!data||!data.photo_analysis?.length){
+    el.innerHTML='<p style="color:#888;font-size:13px">Pehle report generate karo ya koi photo upload karo.</p>';
+    return;
+  }
+  el.innerHTML=data.photo_analysis.map((p,i)=>`
+    <div style="background:#f5f7ff;border-radius:8px;padding:14px;margin-bottom:12px;border-left:4px solid ${parseFloat(p.confidence||1)>=0.7?'#1a237e':'#f57c00'}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#1a237e;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">Photo ${i+1}</span>
+        <span style="font-weight:600;font-size:13px">${p.intent||'Unknown intent'}</span>
+        ${p.confidence?`<span style="font-size:11px;color:${confColor(p.confidence)};font-weight:700;margin-left:auto">${Math.round(parseFloat(p.confidence)*100)}% conf</span>`:''}
+      </div>
+      ${p.file?`<div style="font-size:11px;color:#888;margin-bottom:6px">File: ${p.file}</div>`:''}
+      ${p.observations?`<div style="font-size:12.5px;color:#444;background:#fff;border-radius:4px;padding:8px">${p.observations}</div>`:''}
+      ${p.fields_supported?.length?`<div style="margin-top:8px;font-size:12px"><b>Fields supported:</b> ${p.fields_supported.map(f=>`<span style="background:#e8eaf6;color:#1a237e;padding:1px 6px;border-radius:8px;margin:2px;display:inline-block">${f}</span>`).join('')}</div>`:''}
+    </div>
+  `).join('');
+}
+
+function autoSaveLearningFromAI(){
+  const data=safeJsonParse(localStorage.getItem(HF_LAST_AUDIT_STORE)||'',null);
+  if(!data?.learning_suggestions?.length){toast('No suggestions to save','err');return;}
+  const mem=getLearningMemory();
+  mem.user_corrections=mem.user_corrections||[];
+  let added=0;
+  data.learning_suggestions.forEach(s=>{
+    if(!s.condition&&!s.new_rule)return;
+    mem.user_corrections.push({
+      id:'auto_'+Date.now()+'_'+Math.random().toString(36).slice(2),
+      source:'auto_learning',
+      property_type:CS?.propTypeVal||'all',
+      section:'AI Suggested',
+      field:'',
+      mistake_pattern:s.mistake_prevented||s.condition||'',
+      wrong_value:'',
+      correct_rule:s.new_rule||s.condition||'',
+      correct_value:'',
+      reason:'Auto-saved from AI learning suggestions',
+      confidence:'medium',
+      screenshot_saved:false,
+      screenshot:'',
+      created_at:new Date().toISOString(),
+      apply_next_time:true
+    });
+    added++;
+  });
+  setLearningMemory(mem);
+  toast(`✅ ${added} auto-learning rules saved!`,'ok');
+  renderAuditNotes();
+}
+
+const gCases=()=>{try{return JSON.parse(localStorage.getItem('hf_cases')||'[]')}catch{return[]}};
+const sCases=c=>localStorage.setItem('hf_cases',JSON.stringify(c));
+
+// NAV SECTIONS
+const SECTIONS=[
+  {n:1,t:'General Details'},{n:2,t:'Property Overview'},{n:3,t:'Visit Details'},
+  {n:4,t:'Locality'},{n:5,t:'Property Plan'},{n:6,t:'NDMA Guidelines'},
+  {n:7,t:'Boundaries & Dimensions'},{n:8,t:'Structural Details'},{n:9,t:'Violation'},
+  {n:10,t:'Valuation'},{n:11,t:'Floor Wise Built-up Area'},{n:12,t:'Observations'},
+  {n:13,t:'Billing'},
+];
+
+const DOC_GUIDE=[
+  {file:'General Details',note:'Vendor Name and CL Contract No are fixed/read-only. Fill Date of Visit, Pin Code from Google Maps, and GPS Latitude/Longitude.'},
+  {file:'Property Overview',note:'Property Category is usually Individual. Property Type comes from case creation. RERA is NA when not applicable. Save & Proceed is automatic.'},
+  {file:'Visit Details',note:'Capture person met, ownership source, legal/site address, landmark, occupancy, occupied by and usage.'},
+  {file:'Locality',note:'Auto-save locality distances, road width/type, habitation, occupancy percentage, electricity, water and drainage.'},
+  {file:'Property Plan',note:'Use NA / layout / building plan details depending on document availability. Auto-save enabled.'},
+  {file:'NDMA Guidelines',note:'Default Bhopal rules: Seismic Zone II, Flood No, Cyclone No, Landslide No, CR Zone No, Demolition Risk Low, NDMA Yes.'},
+  {file:'Boundaries & Dimensions',note:'Compare document/site/plan boundaries. Use clear boundary remarks and standard marketability Average.'},
+  {file:'Structural Details',note:'Auto-save structure type, roof type, floors, quality, property age and residual age.'},
+  {file:'Violation',note:'Check demolition risk due to violation and land encroachment.'},
+  {file:'Valuation',note:'Construction percentage supports 0% to 100% in 10% steps. Land and construction values auto-calculate.'},
+  {file:'Floor Wise Built-up Area',note:'Use the + button to add additional floors with the same floor-wise BUA format.'},
+  {file:'Observations',note:'Write observations/remarks point by point.'},
+  {file:'Billing',note:'Default billing amount is 1800; edit when required.'},
+  {file:'Site Photos',note:'Upload property photos, view them in a collage, and remove/re-upload if the wrong photo is attached.'}
+];
+
+const PROPERTY_TYPE_GUIDES={
+  open_plot:{
+    label:'Open Plot / Vacant Land',
+    status:'ACTIVE: uploaded instructions/docs are for this type only',
+    ui:'Open Plot selected: AI will apply only vacant/open plot rules. Construction value remains 0 unless architect map is received.',
+    prompt:`ACTIVE PROPERTY TYPE = OPEN PLOT / VACANT LAND.
+Use ONLY open plot/vacant land rules for this case. The uploaded Word instruction/screenshots are ONLY for this property type.
+Do NOT mix RCC house, apartment, under-construction, top-up, shop or office logic.
+Portal has no Open Plot option, so output s2.propType = "Row House" and s2.propCategory = "Individual".
+Open plot defaults: s3.occupancy="Vacant", s3.occupiedBy="Self" if portal requires a value, s3.usage="Residential", s3.doorName="NA", s2.rera="NA", s2.projectName="NA".
+Property Plan: building/commencement/occupancy certificates are usually "NA" for open plot. Use layout/sub-plotting only when layout document is available.
+Boundaries: fill document/site/plan boundaries from sale deed/field form/layout. If layout/architect plan received then identifiable Yes and remarks "PROPERTY IS IDENTIFIED AS PER ARCHITECT LAYOUT PLAN." If not received then identifiable No and remarks "PROPERTY IS NOT IDENTIFIED, LAYOUT REQUIRED." Marketability must be "Average".
+Structural Details: Age 0, Residual Age 60, Floors Proposed, no existing construction.
+Valuation: Land L1/L3 from plot area and market land rate. Construction C1/C2/C3 = 0 when no architect map. If architect map received, C2 = proposed BUA x construction rate; C3 remains 0 until work exists. Construction percentage = 0%.
+Observations: use open plot observation style only.`
+  },
+  rcc_house:{
+    label:'RCC House / Individual House',
+    status:'WAITING: user will upload separate working instructions later',
+    ui:'RCC House selected: AI will use RCC/individual house logic only. Open plot rules will not be applied.',
+    prompt:`ACTIVE PROPERTY TYPE = RCC HOUSE / INDIVIDUAL HOUSE.
+Do NOT use open plot/vacant-land instructions for this case.
+Use RCC/individual house logic only: s2.propType="Individual House", s2.propCategory="Individual", usage generally Residential, valuation = land value + existing construction value, construction stage usually Completed if house is complete, construction percentage 100% for completed house. Structure/Roof/Age/Residual Age must come from site documents/photos. This type will be refined after user uploads RCC-specific working examples.`
+  },
+  apartment:{
+    label:'Apartment / Flat',
+    status:'WAITING: user will upload separate working instructions later',
+    ui:'Apartment selected: AI will use flat/project logic only. Land component should normally be 0.',
+    prompt:`ACTIVE PROPERTY TYPE = APARTMENT / FLAT.
+Do NOT use open plot/vacant-land instructions for this case.
+Use apartment/flat logic only: s2.propType="Apartment", s2.propCategory="Project", land component normally 0 for buyer, valuation should be based on flat area/BUA and market rate. Capture society/project name, flat number, floor, occupancy and boundaries as flat/corridor/adjacent unit style. This type will be refined after user uploads apartment-specific working examples.`
+  },
+  under_construction:{
+    label:'Under Construction',
+    status:'WAITING: user will upload separate working instructions later',
+    ui:'Under Construction selected: AI will use construction-stage and percentage logic only.',
+    prompt:`ACTIVE PROPERTY TYPE = UNDER CONSTRUCTION.
+Do NOT use open plot/vacant-land instructions unless the site is actually fully vacant.
+Use under-construction logic only: age usually 0, identify stage from photos/documents, construction percentage must reflect actual site progress, valuation at current stage = land value + current construction value, realizable value = land value + full estimated construction value. This type will be refined after user uploads under-construction-specific examples.`
+  },
+  topup:{
+    label:'Top-Up Loan',
+    status:'WAITING: user will upload separate working instructions later',
+    ui:'Top-Up selected: AI will use existing-property revaluation logic only.',
+    prompt:`ACTIVE PROPERTY TYPE = TOP-UP LOAN.
+Do NOT use open plot/vacant-land instructions for this case.
+Use top-up/revaluation logic only: property normally already exists, valuation is current market value, construction percentage generally 100% if complete, focus on present condition, age, residual age, current market rate and existing construction. This type will be refined after user uploads top-up-specific examples.`
+  },
+  shop_office:{
+    label:'Shop / Office',
+    status:'NEW OPTION: basic commercial logic added; user will upload detailed working later',
+    ui:'Shop / Office selected: AI will use commercial property logic only. Usage and zone should normally be Commercial.',
+    prompt:`ACTIVE PROPERTY TYPE = SHOP / OFFICE.
+Do NOT use open plot/vacant-land instructions for this case.
+Use shop/office commercial logic only: s2.propType should be "Shop" or "Office" as supported by documents/photos, usage="Commercial", zone normally "Commercial" or "Mixed", valuation should be commercial area x market commercial rate. Capture occupancy, frontage/approach, marketability, amenities and shop/office-specific observations. This type will be refined after user uploads shop/office-specific examples.`
+  }
+};
+
+function getTypeGuide(val){return PROPERTY_TYPE_GUIDES[val]||null;}
+function updateTypeGuide(){
+  const sel=document.getElementById('cType');
+  const box=document.getElementById('typeGuideBox');
+  if(!sel||!box)return;
+  const g=getTypeGuide(sel.value);
+  if(!g){box.innerHTML='Select property type first. AI will use only that selected property-type logic while creating TER report.';return;}
+  box.innerHTML='<strong>'+g.label+'</strong><br>'+g.ui+'<br><span style="color:#777">'+g.status+'</span>';
+}
+function activeTypePrompt(){
+  const g=getTypeGuide(CS?.propTypeVal);
+  return g?g.prompt:'No active property-type guide selected. Ask user to select property type.';
+}
+function typeDefaultOverride(){
+  const t=CS?.propTypeVal||'';
+  const common='Always return all sections s1 to s12. Use exact portal dropdown values only.';
+  if(t==='open_plot')return common+' Default output bias: s2.propCategory=Individual, s2.propType=Row House, s2.rera=NA, s2.projectName=NA, s3.occupancy=Vacant, s3.usage=Residential, s6 fixed Bhopal NDMA, s7.marketability=Average, s8.propAge=0, s8.residualAge=60, s10 construction values 0 unless architect map is received.';
+  if(t==='rcc_house')return common+' Default output bias: s2.propCategory=Individual, s2.propType=Individual House, s3.usage=Residential, s8.structType=RCC where supported, valuation includes land plus construction.';
+  if(t==='apartment')return common+' Default output bias: s2.propCategory=Project, s2.propType=Apartment, land values normally 0, valuation based on flat area and market rate.';
+  if(t==='under_construction')return common+' Default output bias: construction stage and construction percentage are mandatory; valuation includes current-stage value and realizable value.';
+  if(t==='topup')return common+' Default output bias: existing property revaluation, completed construction generally 100% when complete.';
+  if(t==='shop_office')return common+' Default output bias: s2.propType=Shop or Office, s3.usage=Commercial, s2.zone=Commercial or Mixed, valuation based on commercial area and market commercial rate.';
+  return common;
+}
+
+
+// Build sidenav
+function buildNav(){
+  const nav=document.getElementById('sidenav');
+  nav.innerHTML=SECTIONS.map(s=>`
+    <div class="nav-item" id="nav-${s.n}" onclick="jumpSection(${s.n})">
+      <span class="nav-num">${s.n}</span>${s.t}
+    </div>`).join('');
+}
+
+function updateNav(){
+  SECTIONS.forEach(s=>{
+    const el=document.getElementById('nav-'+s.n);
+    if(!el)return;
+    el.className='nav-item'+(s.n===curSection?' active':s.n<curSection?' done':'');
+  });
+}
+
+function showSection(n){
+  curSection=n;
+  document.querySelectorAll('.section-wrap').forEach(el=>el.classList.remove('active'));
+  const sw=document.getElementById('sw-'+n);
+  if(sw){sw.classList.add('active');sw.scrollIntoView({behavior:'smooth',block:'start'});}
+  updateNav(); updBot();
+}
+
+function jumpSection(n){if(curScreen==='report')showSection(n);}
+
+function nextSection(n){
+  showSection(n+1 > 13 ? 13 : n+1);
+}
+
+// ── SCREENS ────────────────────────────────────────────────────────────
+function goScr(id){
+  ['dash','info','upload','opts','gen','learn','report'].forEach(s=>{
+    const el=document.getElementById('scr-'+s);
+    if(el) el.style.display='none';
+  });
+  const target=document.getElementById('scr-'+id);
+  if(target) target.style.display='block';
+  curScreen=id;
+  const nav=document.getElementById('sidenav');
+  if(nav) nav.style.display=id==='report'?'block':'none';
+  updBot();
+}
+
+function updBot(){
+  const L=document.getElementById('bbL'),R=document.getElementById('bbR');
+  L.innerHTML=''; R.innerHTML='';
+  if(curScreen==='dash'){
+    L.innerHTML='<button class="bb-back" onclick="goLearn()">🧠 Teach AI / Memory</button>';
+    R.innerHTML='<button class="bb-btn bb-primary" onclick="startCase()">+ New Case</button>';
+  } else if(curScreen==='learn'){
+    L.innerHTML='<button class="bb-back" onclick="goBack()">&#8592; Back</button>';
+    R.innerHTML='<button class="bb-btn bb-primary" onclick="renderLearningRules()">Refresh Memory</button>';
+  } else if(curScreen==='info'){
+    L.innerHTML='<button class="bb-back" onclick="goBack()">&#8592; Dashboard</button>';
+    R.innerHTML='<button class="bb-btn bb-primary" onclick="go2()">Next: Upload &#8594;</button>';
+  } else if(curScreen==='upload'){
+    L.innerHTML='<button class="bb-back" onclick="goBack()">&#8592; Back</button>';
+    R.innerHTML='<button class="bb-btn bb-primary" onclick="goOpts()">Next: Options &#8594;</button>';
+  } else if(curScreen==='opts'){
+    L.innerHTML='<button class="bb-back" onclick="goBack()">&#8592; Back</button>';
+    R.innerHTML='<button class="bb-btn bb-success" onclick="doGen()">&#129504; Generate TER Report</button>';
+  } else if(curScreen==='report'){
+    L.innerHTML='<button class="bb-back" onclick="goDash()">&#8592; All Cases</button>';
+    R.innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="bb-btn bb-primary" onclick="saveReport()">💾 Save</button>
+      <button class="bb-btn" style="background:#c62828;color:#fff" onclick="quickReportBug()" title="Report a mistake to teach AI">⚠️ Report Bug</button>
+      <button class="bb-btn" style="background:#512da8;color:#fff" onclick="goLearn()">🧠 Teach AI</button>
+      <button class="bb-btn" style="background:#e65100;color:#fff" onclick="exportExt()">📤 Export</button>
+    </div>`;
+  }
+}
+
+// ── DASHBOARD ──────────────────────────────────────────────────────────
+function renderDash(){
+  document.getElementById('tbTitle').textContent='HomeFirst TER Generator v2.4 Smart Learning';
+  document.getElementById('sidenav').style.display='none';
+  const cases=gCases();
+  const el=document.getElementById('caseList');
+  if(!cases.length){el.innerHTML='<div style="text-align:center;padding:50px;color:#aaa"><div style="font-size:40px;margin-bottom:12px">&#127968;</div><p style="font-size:14px">No cases yet. Click <strong>New Case</strong> to start!</p></div>';return;}
+  el.innerHTML=cases.slice().reverse().map(c=>`
+    <div class="case-card ${c.report?'done':''}" onclick="openCase('${c.id}')">
+      <div style="width:38px;height:38px;border-radius:6px;background:#e8eaf6;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${c.report?'✅':'⏳'}</div>
+      <div class="ci-info">
+        <div class="ci-name">${c.name}</div>
+        <div class="ci-meta">${c.propTypeLabel||''} | ${c.date||''} | ${new Date(c.ts).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+      </div>
+      <span class="ci-badge ${c.report?'cb-done':'cb-prog'}">${c.report?'Done':'In Progress'}</span>
+    </div>`).join('');
+}
+
+function startCase(){
+  CS={id:Date.now()+'',name:'',date:new Date().toISOString().split('T')[0],propTypeVal:'',propTypeLabel:'',report:null,ts:Date.now()};
+  UF={gps:[],ats:[],email:[],form:[]};
+  FO={map:null,layout:null,bua:null};
+  ['p-gps','p-ats','p-email','p-form'].forEach(id=>document.getElementById(id).innerHTML='');
+  ['cName','lr','ps','en'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('cDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('cType').value='';
+  updateTypeGuide();
+  document.getElementById('tbTitle').textContent='New Case';
+  ['tmy','tmn','tly','tln'].forEach(id=>{const el=document.getElementById(id);if(el)el.className='tog-btn';});
+  const bb=document.getElementById('buaBox');if(bb)bb.className='bua-opts';
+  goScr('info');
+}
+
+function openCase(id){
+  const c=gCases().find(x=>x.id===id);
+  if(!c)return;
+  CS=c;
+  document.getElementById('tbTitle').textContent=c.name;
+  if(c.report){fillReport(c.report);goScr('report');showSection(1);}
+  else{document.getElementById('cName').value=c.name;goScr('info');}
+}
+
+function go2(){
+  const nm=document.getElementById('cName').value.trim();
+  const pt=document.getElementById('cType').value;
+  if(!nm){toast('Enter case name!','err');return;}
+  if(!pt){toast('Select property type!','err');return;}
+  CS.name=nm; CS.propTypeVal=pt;
+  CS.propTypeLabel=document.getElementById('cType').options[document.getElementById('cType').selectedIndex].text;
+  CS.date=document.getElementById('cDate').value;
+  document.getElementById('tbTitle').textContent=nm;
+  saveCS(); goScr('upload');
+}
+
+// ── FILE UPLOAD ────────────────────────────────────────────────────────
+function dov(e,el){e.preventDefault();el.classList.add('drag');}
+function dop(e,cat){e.preventDefault();e.currentTarget.classList.remove('drag');addFL(e.dataTransfer.files,cat);}
+function addF(inp,cat){addFL(inp.files,cat);}
+function addFL(files,cat){
+  const prev=document.getElementById('p-'+cat);
+  Array.from(files).forEach(f=>{
+    const r=new FileReader();
+    r.onload=ev=>{
+      const b64=ev.target.result.split(',')[1];
+      const isPdf=f.type==='application/pdf'||f.name.endsWith('.pdf');
+      UF[cat].push({name:f.name,b64,mime:isPdf?'application/pdf':f.type||'image/jpeg',isPdf});
+      if(isPdf){
+        const c=document.createElement('div');c.className='pdf-chip';c.innerHTML='&#128196; '+f.name;
+        prev.appendChild(c);
+      } else {
+        const img=document.createElement('img');img.src=ev.target.result;prev.appendChild(img);
+      }
+    };
+    r.readAsDataURL(f);
+  });
+}
+
+// ── FORMAT OPTIONS ─────────────────────────────────────────────────────
+function setMap(v){
+  FO.map=v;
+  document.getElementById('tmy').className='tog-btn'+(v==='yes'?' y':'');
+  document.getElementById('tmn').className='tog-btn'+(v==='no'?' n':'');
+  document.getElementById('buaBox').className='bua-opts'+(v==='yes'?' on':'');
+}
+function setLayout(v){
+  FO.layout=v;
+  document.getElementById('tly').className='tog-btn'+(v==='yes'?' y':'');
+  document.getElementById('tln').className='tog-btn'+(v==='no'?' n':'');
+}
+function setBua(v){
+  FO.bua=v;
+  ['bo0','bo1','bo2'].forEach(id=>document.getElementById(id).classList.remove('sel'));
+  document.getElementById({gf:'bo0',g1:'bo1',partial:'bo2'}[v]).classList.add('sel');
+  document.getElementById('cbInp').style.display=v==='partial'?'block':'none';
+}
+
+// ── GENERATE ──────────────────────────────────────────────────────────
+async function doGen(){
+  if(!Object.values(UF).flat().length){toast('No documents uploaded!','err');return;}
+  goScr('gen');
+  const steps=['gs0','gs1','gs2','gs3','gs4'];
+  steps.forEach(id=>document.getElementById(id).className='gen-step');
+  steps.forEach((id,i)=>setTimeout(()=>{
+    if(i>0)document.getElementById(steps[i-1]).className='gen-step done';
+    document.getElementById(id).className='gen-step act';
+  },i*2200));
+  try{
+    const rep=await callAPI();
+    CS.report=rep; saveCS();
+    fillReport(rep);
+    goScr('report');
+    showSection(1);
+    toast('Report generated! ✓','ok');
+    renderDash();
+  }catch(err){
+    console.error(err);
+    goScr('opts');
+    toast('Error: '+err.message,'err');
+    setTimeout(()=>alert('Error: '+err.message),200);
+  }
+}
+
+function sanitizeReportByType(r){
+  if(!r) return r;
+  const t=CS?.propTypeVal||'';
+  r.s1=r.s1||{}; r.s2=r.s2||{}; r.s3=r.s3||{}; r.s6=r.s6||{}; r.s7=r.s7||{}; r.s8=r.s8||{}; r.s10=r.s10||{}; r.s12=r.s12||{};
+  // Basic safety for pin/lat/lng so wrong valuation numbers never enter General Details.
+  if(r.s1.pinCode && !/^\d{6}$/.test(String(r.s1.pinCode).trim())) r.s1.pinCode='';
+  const lat=parseFloat(r.s1.lat), lng=parseFloat(r.s1.lng);
+  if(r.s1.lat && (isNaN(lat)||lat<6||lat>38)) r.s1.lat='';
+  if(r.s1.lng && (isNaN(lng)||lng<68||lng>98)) r.s1.lng='';
+  // Bhopal NDMA safe defaults
+  r.s6={seismic:'II',flood:'No',cyclone:'No',landslide:'No',crZone:'No',demolRisk:'Low',demolDetails:'NA',ndmaFollow:'Yes',...r.s6};
+  if(t==='open_plot'){
+    r.s2={propCategory:'Individual',propType:'Row House',rera:'NA',projectName:'NA',...r.s2};
+    r.s2.propCategory='Individual'; r.s2.propType='Row House'; r.s2.rera=r.s2.rera||'NA'; r.s2.projectName=r.s2.projectName||'NA';
+    r.s3.occupancy='Vacant'; r.s3.usage=r.s3.usage||'Residential'; r.s3.doorName=r.s3.doorName||'NA';
+    r.s7.marketability='Average';
+    r.s8.propAge='0'; r.s8.residualAge=r.s8.residualAge||'60';
+    if(FO.map!=='yes'){
+      ['c1','c2','c3'].forEach(k=>{r.s10[k+'Area']='0'; r.s10[k+'Rate']='0'; r.s10[k+'Val']='0';});
+      r.s10.constPct='0%'; r.s10.constAsPerPlan='NA';
+    }
+  } else if(t==='rcc_house'){
+    r.s2.propCategory=r.s2.propCategory||'Individual'; r.s2.propType='Individual House'; r.s3.usage=r.s3.usage||'Residential';
+  } else if(t==='apartment'){
+    r.s2.propCategory='Project'; r.s2.propType='Apartment'; ['l1','l2','l3'].forEach(k=>{r.s10[k+'Area']='0'; r.s10[k+'Rate']='0'; r.s10[k+'Val']='0';});
+  } else if(t==='shop_office'){
+    if(!['Shop','Office'].includes(r.s2.propType)) r.s2.propType='Shop';
+    r.s3.usage='Commercial'; if(!r.s2.zone) r.s2.zone='Commercial';
+  }
+  return r;
+}
+
+async function callAPI(){
+  const mapI=FO.map==='yes'?'MAP:YES BUA='+(FO.bua==='gf'?'GF(x1)':FO.bua==='g1'?'G+1(x2)':'Custom:'+document.getElementById('cbVal').value+'sqft'):'MAP:NO C1,C2,C3=0';
+  const layI=FO.layout==='yes'?'LAYOUT:YES IDENTIFIED':'LAYOUT:NO NOT IDENTIFIED';
+  const lr=document.getElementById('lr').value,ps=document.getElementById('ps').value,en=document.getElementById('en').value;
+
+  const sys=`You are expert HomeFirst Finance TER writer for UE&A Bhopal India.
+KNOWLEDGE BASE:
+${KN}
+CASE: ${CS.name} | TYPE:${CS.propTypeLabel}(${CS.propTypeVal}) | DATE:${CS.date}
+${mapI} | ${layI} ${lr?'LAND RATE:Rs'+lr+'/sqft':''} ${ps?'PLOT:'+ps+' sqft':''} ${en?'NOTES:'+en:''}
+
+PROPERTY-TYPE ROUTER — VERY IMPORTANT:
+${activeTypePrompt()}
+
+DEFAULT OVERRIDE FOR SELECTED TYPE:
+${typeDefaultOverride()}
+
+HF TER MODEL PROMPT v1.1:
+${HF_MODEL_PROMPT}
+
+SAVED CORRECTION MEMORY / TEACH AI RULES:
+${getLearningPrompt()}
+
+Never mix logic across property types. The uploaded instruction DOCX set currently belongs to Open Plot / Vacant Land only. For other property types, use only the active type prompt and document evidence.
+
+CRITICAL — Portal uses EXACT values:
+Property Category: "Project" or "Individual"
+Property Type: "Apartment", "Row House", "Individual House", "Shop", "Office"
+Property Location: "Metro", "Town", "Village"
+Rural/Urban: "Rural" or "Urban"
+Zone: "Residential","Agriculture","Industrial","Mixed","Commercial"
+Property Area Limits: "MC","TP","ZP","GP"
+Location Category: "MC","TP","ZP","GP"
+Approach Road Type: "RCC Road","Tar Road","Soil Road"
+Occupancy in Project: "100%","50%","25%"
+Habitation: "Dense","Medium","Low"
+Electricity/Water/Drainage: "Yes" or "No"
+Seismic Zone: "II","III","IV","V" (NOT "Zone II")
+Flood/Cyclone/Landslide/CR Zone: "Yes" or "No"
+Demolition Risk: "High","Medium","Low"
+Marketability: "Good","Average","Poor" (NOT "Avg.")
+Boundaries Matching: "Yes" or "No"
+Type of Structure: "RCC" or "Load Bearing"
+Type of Roof: "ACC Sheet","Stone Patti","Tin Sheet","Terracotta Tiles","RCC"
+Quality of Construction: "Good","Average","Poor"
+Violation dropdowns: "Yes" or "No"
+Lift Available: "Yes" or "No"
+Construction Stage: "Foundation","Plinth","RCC","Brick Work","Plaster","Tiling","Internal Finishing","Completed"
+Construction %: "0%","10%","20%","30%","40%","50%","60%","70%","80%","90%","100%"
+Occupancy Status: "Occupied","Vacant","Under Construction"
+Occupied By: "Self","Tenants","Self + Tenants","Seller"
+Usage of property: "Residential","Commercial","Mixed"
+Property easily identifiable: "Yes" or "No"
+NA Conversion Order/Property Plan dropdowns: "Yes","No","NA"
+Layout Plan Authority: "TP","ZP","GP","Licensed Surveyor","NA"
+NDMA Guidelines: "Yes" or "No"
+
+For Bhopal open plots: Seismic="II", Flood="No", Cyclone="No", Landslide="No", CR="No", Demolition Risk="Low", Demolition Details="NA", NDMA="Yes"
+
+Respond ONLY strict valid JSON no markdown no backticks. Use double quotes only. Do not use comments. Do not use trailing commas. Escape observation line breaks as \n inside a single string. Preferred shape: {"report":{...sections...},"photo_analysis":[],"audit_notes":[],"learning_suggestions":[]}. If you cannot wrap, return direct sections. Minimum direct report shape:
+{"s1":{"vendorName":"Unique Engineering and Associate - Bhopal","dateVisit":"","lai":"","pinCode":"","lat":"","lng":"","propCode":""},"s2":{"propCategory":"Individual","propType":"Row House","loanType":"","propLocation":"Village","population":"","ruralUrban":"Rural","zone":"Residential","areaLimits":"GP","rera":"NA","projectName":"NA"},"s3":{"personMet":"","relationship":"","ownerName":"","ownerSource":"","docsAvail":"Yes","societyBoard":"NA","legalAddress":"","siteAddress":"","doorName":"NA","landmark":"","occupancy":"Vacant","occupiedBy":"Self","usage":"Residential","identifiable":"Yes","mobileNo":""},"s4":{"nearestCity":"Bhopal","locCategory":"GP","distCity":"","distRailway":"","distBus":"","distHospital":"","roadWidth":"15","roadType":"RCC Road","occupancyPct":"25%","habitation":"Low","negMarkers":"NA","electricity":"Yes","water":"Yes","drainage":"Yes"},"s5":{"naConversion":"NA","naNum":"NA","naDate":"NA","layoutAuth":"GP","layoutNum":"","layoutDate":"","buildingAuth":"NA","buildingNum":"NA","buildingDate":"NA","commAuth":"NA","commNum":"NA","commDate":"NA","occAuth":"NA","occNum":"NA","occDate":"NA","subplotAuth":"GP","subplotNum":"","subplotDate":""},"s6":{"seismic":"II","flood":"No","cyclone":"No","landslide":"No","crZone":"No","demolRisk":"Low","demolDetails":"NA","ndmaFollow":"Yes"},"s7":{"northDoc":"","northSite":"","northPlan":"","southDoc":"","southSite":"","southPlan":"","eastDoc":"","eastSite":"","eastPlan":"","westDoc":"","westSite":"","westPlan":"","bndMatch":"Yes","marketability":"Average","bndRemarks":""},"s8":{"structType":"Load Bearing","roofType":"RCC","floorsPermissible":"G+1 (PROPOSED)","floorsActual":"G.F. PROPOSED","unitsFloor":"1","quality":"Average","propAge":"0","residualAge":"60"},"s9":{"demolViolation":"No","encroachment":"No"},"s10":{"l1Area":"","l1Rate":"","l1Val":"","l2Area":"0","l2Rate":"0","l2Val":"0","l3Area":"","l3Rate":"","l3Val":"","c1Area":"0","c1Rate":"0","c1Val":"0","c2Area":"0","c2Rate":"0","c2Val":"0","c3Area":"0","c3Rate":"0","c3Val":"0","amenities":"NONE","amenitiesVal":"0","liftAvail":"No","bldgHeight":"0","realizableVal":"","constStage":"Foundation","constPct":"0%","currentStageVal":"","govtVal":"0","customerEst":"0","valuerEst":"","marketRate":"","constAsPerPlan":"NA"},"s11":[{"floorNo":"G.F.","planArea":"0","siteArea":"0","remarks":"G.F. PROPOSED"}],"s12":{"obs":""},"summary":{"totalValue":"","confidence":""}}`;
+
+  const content=[{type:'text',text:'Analyze documents and generate HomeFirst TER JSON. Use selected property type only: '+CS.propTypeLabel+' ('+CS.propTypeVal+'). Apply saved correction memory and return audit_notes/photo_analysis if possible.'}];
+  Object.values(UF).flat().forEach(f=>{
+    if(f.isPdf)content.push({type:'document',source:{type:'base64',media_type:'application/pdf',data:f.b64}});
+    else if(f.mime.startsWith('image/'))content.push({type:'image',source:{type:'base64',media_type:f.mime,data:f.b64}});
+  });
+
+  const data=await anthropicFetchWithRetry({max_tokens:5000,system:sys,messages:[{role:'user',content}]});
+  const txt=data.content.map(c=>c.text||'').join('');
+  const parsed=await parseOrRepairTerJson(txt);
+  const report=parsed.report||parsed;
+  saveLastAudit({photo_analysis:parsed.photo_analysis||[], audit_notes:parsed.audit_notes||[], learning_suggestions:parsed.learning_suggestions||[], model_version:HF_MODEL_VERSION});
+  // Auto-save high-confidence AI learning suggestions (confidence>=0.85 conditions)
+  if(parsed.learning_suggestions?.length){
+    autoSaveLearningFromAIIfHighConf(parsed.learning_suggestions);
+  }
+  return sanitizeReportByType(report);
+}
+
+// ── DEEP JSON REPAIR ENGINE v2.4 ──────────────────────────────────────
+// Root cause fix: AI returns raw newlines INSIDE json strings (line 288 = obs field)
+// "obs": "line1\nline2"  ← raw newline breaks JSON.parse → "Expected , or ] at position XXXX"
+function extractJsonBlock(text){
+  let clean=String(text||'').replace(/```json\b|```/gi,'').trim();
+  let depth=0,start=-1,end=-1;
+  for(let i=0;i<clean.length;i++){
+    if(clean[i]==='{'){if(start<0)start=i;depth++;}
+    else if(clean[i]==='}'){depth--;if(depth===0&&start>=0){end=i;break;}}
+  }
+  if(start>=0&&end>start)return clean.slice(start,end+1);
+  const first=clean.indexOf('{'),last=clean.lastIndexOf('}');
+  if(first>=0&&last>first)return clean.slice(first,last+1);
+  return clean;
+}
+
+// THE KEY FIX: escape raw newlines/tabs/CRs found inside JSON string values
+function escapeRawNewlinesInStrings(s){
+  let out='',inStr=false,esc=false;
+  for(let i=0;i<s.length;i++){
+    const ch=s[i];
+    if(esc){out+=ch;esc=false;continue;}
+    if(ch==='\\'){out+=ch;if(inStr)esc=true;continue;}
+    if(ch==='"'){inStr=!inStr;out+=ch;continue;}
+    if(inStr){
+      if(ch==='\n'){out+='\\n';continue;}
+      if(ch==='\r'){out+='\\r';continue;}
+      if(ch==='\t'){out+='\\t';continue;}
+      if(ch.charCodeAt(0)<32){out+='\\u'+ch.charCodeAt(0).toString(16).padStart(4,'0');continue;}
+    }
+    out+=ch;
+  }
+  return out;
+}
+
+function lightRepairJsonText(text){
+  let s=extractJsonBlock(text);
+  s=s.replace(/[\u201c\u201d]/g,'"').replace(/[\u2018\u2019]/g,"'");
+  s=escapeRawNewlinesInStrings(s); // ← MAIN FIX for position-XXXX errors
+  s=s.replace(/,\s*([}\]])/g,'$1');
+  s=s.replace(/\/\/[^\n]*/g,'');
+  s=s.replace(/\/\*[\s\S]*?\*\//g,'');
+  return s;
+}
+
+async function parseOrRepairTerJson(text){
+  const clean=lightRepairJsonText(text);
+  // Attempt 1: direct parse after light repair
+  try{return JSON.parse(clean);}catch(firstErr){
+    console.warn('JSON parse fail (attempt 1):', firstErr.message);
+  }
+  // Attempt 2: strip any prefix/suffix garbage
+  try{
+    const stripped=clean.replace(/^[^{]*/,'').replace(/[^}]*$/,'');
+    return JSON.parse(stripped);
+  }catch(_){}
+  // Attempt 3: AI-powered JSON repair
+  try{
+    const errPos=firstErr?.message?.match(/position (\d+)/)?.[1];
+    const ctx=errPos?`\nError near position ${errPos}: ...${clean.slice(Math.max(0,+errPos-80),+errPos+80)}...`:'';
+    const repairPrompt=`Fix this broken JSON. Return ONLY valid JSON — no markdown, no explanation.
+Rules: double-quotes only, escape all raw newlines inside strings as \\n, remove trailing commas, no comments.${ctx}
+JSON:\n${clean.slice(0,48000)}`;
+    const fixed=await anthropicFetchWithRetry({
+      max_tokens:6000,
+      system:'You are a JSON repair engine. Input: broken JSON. Output: only strict valid JSON, nothing else.',
+      messages:[{role:'user',content:[{type:'text',text:repairPrompt}]}]
+    });
+    const fixedText=fixed.content.map(c=>c.text||'').join('');
+    const result=JSON.parse(lightRepairJsonText(fixedText));
+    console.log('JSON repaired by AI ✓');
+    return result;
+  }catch(secondErr){
+    console.error('JSON repair also failed:', secondErr.message);
+    throw new Error('JSON Error: '+firstErr.message+'\n\nAI repair bhi fail hua. Dobara Generate karo.\nTip: Extra Notes me likhna "observations me newline mat use karo".');
+  }
+}
+
+// ── FILL REPORT FORM ───────────────────────────────────────────────────
+function setVal(id, val){
+  if(!val||val==='undefined'||val==='null') return;
+  const el=document.getElementById(id);
+  if(!el)return;
+  const v=String(val).trim();
+  if(el.tagName==='SELECT'){
+    for(let i=0;i<el.options.length;i++){
+      if(el.options[i].value===v||el.options[i].text===v){
+        el.selectedIndex=i; el.classList.add('has-val','filled'); return;
+      }
+    }
+    // Partial match
+    for(let i=0;i<el.options.length;i++){
+      if(v.toLowerCase().includes(el.options[i].text.toLowerCase())||
+         el.options[i].text.toLowerCase().includes(v.toLowerCase())){
+        el.selectedIndex=i; el.classList.add('has-val','filled'); return;
+      }
+    }
+  } else {
+    el.value=v; el.classList.add('filled');
+    if(el.value==='0'||el.value==='') el.classList.remove('filled');
+  }
+}
+
+function fillReport(r){
+  const s1=r.s1||{},s2=r.s2||{},s3=r.s3||{},s4=r.s4||{};
+  const s5=r.s5||{},s6=r.s6||{},s7=r.s7||{},s8=r.s8||{};
+  const s9=r.s9||{},s10=r.s10||{},s11=r.s11||[],s12=r.s12||{};
+  // S1
+  setVal('r_dateVisit',s1.dateVisit); setVal('r_lai',s1.lai||s1.propCode);
+  setVal('r_pinCode',s1.pinCode); setVal('r_lat',s1.lat); setVal('r_lng',s1.lng);
+  // S2
+  setVal('r_propCategory',s2.propCategory); setVal('r_propType',s2.propType);
+  const loanEl=document.getElementById('r_loanType');if(loanEl&&s2.loanType)loanEl.textContent=s2.loanType;
+  setVal('r_propLocation',s2.propLocation); setVal('r_population',s2.population);
+  setVal('r_ruralUrban',s2.ruralUrban); setVal('r_zone',s2.zone);
+  setVal('r_areaLimits',s2.areaLimits); setVal('r_rera',s2.rera||'NA');
+  const pnEl=document.getElementById('r_projectName');if(pnEl&&s2.projectName)pnEl.textContent=s2.projectName;
+  // S3
+  setVal('r_personMet',s3.personMet); setVal('r_relationship',s3.relationship);
+  setVal('r_ownerName',s3.ownerName); setVal('r_ownerSource',s3.ownerSource||s3.ownerNameSource);
+  setVal('r_docsAvail',s3.docsAvail||s3.docsAvailable);
+  setVal('r_societyBoard',s3.societyBoard); setVal('r_legalAddress',s3.legalAddress);
+  setVal('r_siteAddress',s3.siteAddress); setVal('r_doorName',s3.doorName);
+  setVal('r_landmark',s3.landmark); setVal('r_occupancy',s3.occupancy);
+  setVal('r_occupiedBy',s3.occupiedBy); setVal('r_usage',s3.usage);
+  setVal('r_identifiable',s3.identifiable);
+  // S4
+  setVal('r_nearestCity',s4.nearestCity); setVal('r_locCategory',s4.locCategory);
+  setVal('r_distCity',s4.distCity); setVal('r_distRailway',s4.distRailway);
+  setVal('r_distBus',s4.distBus); setVal('r_distHospital',s4.distHospital);
+  setVal('r_roadWidth',s4.roadWidth); setVal('r_roadType',s4.roadType);
+  setVal('r_occupancyPct',s4.occupancyPct); setVal('r_habitation',s4.habitation);
+  setVal('r_negMarkers',s4.negMarkers); setVal('r_electricity',s4.electricity);
+  setVal('r_water',s4.water); setVal('r_drainage',s4.drainage);
+  // S5
+  setVal('r_naConversion',s5.naConversion); setVal('r_layoutAuth',s5.layoutAuth);
+  setVal('r_layoutNum',s5.layoutNum); setVal('r_layoutDate',s5.layoutDate);
+  setVal('r_buildingAuth',s5.buildingAuth); setVal('r_buildingNum',s5.buildingNum);
+  setVal('r_buildingDate',s5.buildingDate); setVal('r_commAuth',s5.commAuth);
+  setVal('r_commNum',s5.commNum); setVal('r_commDate',s5.commDate);
+  setVal('r_occAuth',s5.occAuth); setVal('r_occNum',s5.occNum); setVal('r_occDate',s5.occDate);
+  setVal('r_subplotAuth',s5.subplotAuth); setVal('r_subplotNum',s5.subplotNum); setVal('r_subplotDate',s5.subplotDate);
+  // S6
+  setVal('r_seismic',s6.seismic); setVal('r_flood',s6.flood);
+  setVal('r_cyclone',s6.cyclone); setVal('r_landslide',s6.landslide);
+  setVal('r_crZone',s6.crZone); setVal('r_demolRisk',s6.demolRisk);
+  setVal('r_demolDetails',s6.demolDetails); setVal('r_ndmaFollow',s6.ndmaFollow);
+  // S7 boundaries
+  ['north','south','east','west'].forEach(d=>{
+    setVal('r_'+d+'Doc',s7[d+'Doc']); setVal('r_'+d+'Site',s7[d+'Site']); setVal('r_'+d+'Plan',s7[d+'Plan']);
+  });
+  setVal('r_bndMatch',s7.bndMatch); setVal('r_marketability',s7.marketability);
+  setVal('r_bndRemarks',s7.bndRemarks);
+  // S8
+  setVal('r_structType',s8.structType); setVal('r_roofType',s8.roofType);
+  setVal('r_floorsPermissible',s8.floorsPermissible); setVal('r_floorsActual',s8.floorsActual);
+  setVal('r_unitsFloor',s8.unitsFloor||s8.unitsPerFloor); setVal('r_quality',s8.quality);
+  setVal('r_propAge',s8.propAge); setVal('r_residualAge',s8.residualAge);
+  // S9
+  setVal('r_demolViolation',s9.demolViolation); setVal('r_encroachment',s9.encroachment);
+  // S10 valuation
+  ['l1','l2','l3','c1','c2','c3'].forEach(k=>{
+    setVal('r_'+k+'Area',s10[k+'Area']); setVal('r_'+k+'Rate',s10[k+'Rate']); calcVal(k);
+  });
+  setVal('r_amenities',s10.amenities); setVal('r_amenitiesVal',s10.amenitiesVal);
+  setVal('r_liftAvail',s10.liftAvail); setVal('r_bldgHeight',s10.bldgHeight);
+  setVal('r_realizableVal',s10.realizableVal); setVal('r_constStage',s10.constStage);
+  setVal('r_constPct',s10.constPct||'0%'); setVal('r_currentStageVal',s10.currentStageVal);
+  setVal('r_govtVal',s10.govtVal); setVal('r_customerEst',s10.customerEst||s10.customerEstimate);
+  setVal('r_valuerEst',s10.valuerEst||s10.valuerEstimate);
+  setVal('r_marketRate',s10.marketRate); setVal('r_constAsPerPlan',s10.constAsPerPlan||'NA');
+  // S11 floor BUA
+  if(s11.length>0){
+    setVal('r_floorNo0',s11[0].floorNo||s11[0].floor||'G.F.');
+    setVal('r_floorPlan0',s11[0].planArea||'0');
+    setVal('r_floorSite0',s11[0].siteArea||'0');
+    setVal('r_floorRem0',s11[0].remarks||'');
+  }
+  // S12 observations
+  const obsVal=(s12.obs||s12.observations||'');
+  setVal('r_observations', Array.isArray(obsVal) ? obsVal.join('\n') : obsVal);
+}
+
+// ── VALUATION CALC ─────────────────────────────────────────────────────
+function calcVal(k){
+  const a=parseFloat(document.getElementById('r_'+k+'Area')?.value)||0;
+  const r=parseFloat(document.getElementById('r_'+k+'Rate')?.value)||0;
+  const el=document.getElementById('rv_'+k);
+  if(el)el.textContent=(a*r).toLocaleString('en-IN');
+}
+
+// ── SAVE & EXPORT ──────────────────────────────────────────────────────
+function saveCS(){
+  const cases=gCases();
+  const i=cases.findIndex(c=>c.id===CS.id);
+  if(i>=0)cases[i]=CS; else cases.push(CS);
+  sCases(cases);
+}
+
+function saveReport(){
+  // Collect current form values back to CS.report
+  if(!CS.report)CS.report={};
+  toast('Saved! ✓','ok');
+  saveCS();
+}
+
+function exportExt(){
+  if(!CS){toast('No case loaded!','err');return;}
+  const data=JSON.stringify(CS,null,2);
+  const blob=new Blob([data],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=(CS.name||'case').replace(/[^a-zA-Z0-9]/g,'_')+'.ter.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Exported for Extension! ✓','ok');
+}
+
+// ── ADD FLOOR ROW ──────────────────────────────────────────────────────
+let floorCount=1;
+function addFloor(){
+  const tbody=document.getElementById('floorTbody');
+  const i=floorCount++;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><select style="width:100%;border:1px solid #e0e0e0;border-radius:4px;padding:7px 8px;font-size:13px"><option>F.F.</option><option>S.F.</option><option>T.F.</option><option>4th Floor</option><option>Basement</option></select></td><td><input type="number" value="0" style="width:100%;border:1px solid #e0e0e0;border-radius:4px;padding:7px 9px;font-size:13px;text-align:right"></td><td><input type="number" value="0" style="width:100%;border:1px solid #e0e0e0;border-radius:4px;padding:7px 9px;font-size:13px;text-align:right"></td><td><input type="text" style="width:100%;border:1px solid #e0e0e0;border-radius:4px;padding:7px 9px;font-size:13px"></td>`;
+  tbody.appendChild(tr);
+}
+
+// ── TOAST ──────────────────────────────────────────────────────────────
+function toast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast'+(type?' '+type:'');
+  t.classList.add('on');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),4000);
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────
+
+
+
+// Auto-save only highly confident AI learning suggestions silently
+function autoSaveLearningFromAIIfHighConf(suggestions){
+  if(!suggestions||!suggestions.length)return;
+  const mem=getLearningMemory();
+  mem.user_corrections=mem.user_corrections||[];
+  let added=0;
+  suggestions.forEach(s=>{
+    if(!s.new_rule&&!s.condition)return;
+    // Only save if suggestion looks substantive (>20 chars)
+    const rule=s.new_rule||s.condition||'';
+    if(rule.length<15)return;
+    // Check not already saved
+    const already=mem.user_corrections.some(r=>r.correct_rule===rule||r.correct_value===rule);
+    if(already)return;
+    mem.user_corrections.push({
+      id:'auto_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+      source:'auto_learning',
+      property_type:CS?.propTypeVal||'all',
+      section:'AI Auto-Learning',
+      field:s.condition||'',
+      mistake_pattern:s.mistake_prevented||'',
+      wrong_value:'',
+      correct_rule:rule,
+      correct_value:rule,
+      reason:'Auto-saved from AI observation during report generation',
+      confidence:'medium',
+      screenshot_saved:false,
+      screenshot:'',
+      created_at:new Date().toISOString(),
+      apply_next_time:true
+    });
+    added++;
+  });
+  if(added>0){
+    setLearningMemory(mem);
+    console.log('Auto-saved',added,'AI learning suggestions to memory');
+  }
+}
+
+// ── QUICK BUG REPORT FROM REPORT SCREEN ────────────────────────────────
+function quickReportBug(){
+  // Pre-fill property type from current case
+  const ptEl=document.getElementById('lm_propertyType');
+  if(ptEl && CS?.propTypeVal) ptEl.value=CS.propTypeVal;
+  switchLearnTab('report');
+  goScr('learn');
+  toast('⚠️ Galti section fill karo — save karo — AI seekhega!','ok');
+}
+
+function goLearn(){
+  const mem=getLearningMemory();
+  const hasRules=(mem.user_corrections||[]).length>0;
+  const banner=document.getElementById('autoLearnBanner');
+  if(banner) banner.style.display=hasRules?'flex':'none';
+  updateMemFilterBadges();
+  switchLearnTab('report');
+  goScr('learn');
+}
+function goBack(){
+  const prev={'info':'dash','upload':'info','opts':'upload','learn':'dash','report':'dash'};
+  const target=prev[curScreen]||'dash';
+  if(target==='dash') renderDash();
+  goScr(target);
+}
+function goDash(){ renderDash(); goScr('dash'); }
+function goOpts(){ goScr('opts'); }
+
+window.onload=()=>{
+  document.getElementById('cDate').value=new Date().toISOString().split('T')[0];
+  buildNav();
+  renderDash();
+  goScr('dash');
+};
+</script>
+</body>
+</html>
